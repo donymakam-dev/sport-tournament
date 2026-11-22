@@ -10,6 +10,36 @@
 </head>
 <body>
 
+  <!-- Modal d'authentification Organisateur / Admin -->
+  <div id="adminAuthOverlay" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div style="background: var(--bg-card, #ffffff); border-radius: 16px; max-width: 420px; width: 100%; padding: 2.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); border: 1px solid var(--border, #e2e8f0); text-align: center;">
+      <div style="width: 56px; height: 56px; background: #e0e7ff; color: #4338ca; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1.25rem;">
+        🔒
+      </div>
+      <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text, #1e293b); margin-bottom: 0.5rem;">Espace Organisateur</h2>
+      <p style="font-size: 0.88rem; color: var(--text-muted, #64748b); margin-bottom: 1.5rem;">
+        Veuillez entrer vos identifiants pour planifier les matchs et gérer le tournoi.
+      </p>
+      <form id="formAdminLogin" onsubmit="handleAdminLogin(event)" style="display: flex; flex-direction: column; gap: 1rem; text-align: left;">
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text, #334155);">Identifiant</label>
+          <input type="text" id="loginUsername" required autocomplete="username" value="admin" style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border, #cbd5e1); font-size: 0.95rem; box-sizing: border-box;" />
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text, #334155);">Mot de passe</label>
+          <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••" style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border, #cbd5e1); font-size: 0.95rem; box-sizing: border-box;" />
+        </div>
+        <div id="loginErrorMsg" style="display: none; background: #fee2e2; color: #991b1b; padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600;"></div>
+        <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="padding: 0.85rem; font-weight: 700; font-size: 0.95rem; margin-top: 0.5rem; border-radius: 8px;">
+          Se connecter
+        </button>
+        <a href="/" style="text-align: center; color: var(--text-muted, #64748b); text-decoration: none; font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem;">
+          ← Retour au Portail Spectateur
+        </a>
+      </form>
+    </div>
+  </div>
+
   <!-- App Header -->
   <header class="app-header">
     <div class="header-container">
@@ -29,6 +59,7 @@
         </a>
         <button class="nav-action-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Mode Sombre / Clair">🌙</button>
         <button class="nav-action-btn" id="btnLangToggle" onclick="toggleLanguage()" title="Langue">🇬🇧 EN</button>
+        <button class="nav-action-btn" id="btnAdminLogout" onclick="logoutAdmin()" title="Se déconnecter" style="color: #ef4444; font-weight: 700; font-size: 0.85rem; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.35rem 0.75rem; border-radius: 8px;">🚪 Déconnexion</button>
       </div>
     </div>
   </header>

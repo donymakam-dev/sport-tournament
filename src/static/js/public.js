@@ -45,7 +45,8 @@ function setupShareButton() {
   document.getElementById("btnShareLink").addEventListener("click", async () => {
     const url = window.location.href;
     const title = currentTournamentData ? currentTournamentData.tournament.name : "Tournoi Sportif Saint Jérôme";
-    
+    const shareText = `Suivez les résultats et le classement en direct du ${title} !\n\n${url}`;
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -54,10 +55,10 @@ function setupShareButton() {
           url: url
         });
       } catch (err) {
-        copyToClipboard(url);
+        copyToClipboard(shareText);
       }
     } else {
-      copyToClipboard(url);
+      copyToClipboard(shareText);
     }
   });
 
@@ -72,7 +73,9 @@ function setupShareButton() {
 
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text).then(() => {
-    alert("Lien du tournoi copié ! Vous pouvez le partager.");
+    alert("Lien du tournoi copié avec succès ! Vous pouvez le coller directement sur WhatsApp ou Telegram.");
+  }).catch(() => {
+    alert("Lien : " + window.location.href);
   });
 }
 

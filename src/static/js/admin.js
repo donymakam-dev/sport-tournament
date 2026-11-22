@@ -26,13 +26,86 @@ let goalsChartInstance = null;
 let pendingGeneratedSchedule = null;
 let pendingCsvParsedData = null;
 
+// ---------------- AUTHENTIFICATION ADMIN ----------------
+async function checkAdminAuth() {
+  const overlay = document.getElementById("adminAuthOverlay");
+  const token = localStorage.getItem("admin_token");
+  if (!token) {
+    if (overlay) overlay.style.display = "flex";
+    return false;
+  }
+  try {
+    const res = await fetch("/api/auth/verify", {
+      headers: { "X-Admin-Token": token }
+    });
+    const data = await res.json();
+    if (data.authenticated) {
+      if (overlay) overlay.style.display = "none";
+      return true;
+    } else {
+      localStorage.removeItem("admin_token");
+      if (overlay) overlay.style.display = "flex";
+      return false;
+    }
+  } catch (err) {
+    console.error("Auth verify error:", err);
+    if (overlay) overlay.style.display = "flex";
+    return false;
+  }
+}
+
+async function handleAdminLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById("loginUsername").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errorBox = document.getElementById("loginErrorMsg");
+  const btn = document.getElementById("btnLoginSubmit");
+
+  errorBox.style.display = "none";
+  btn.disabled = true;
+  btn.textContent = "Vérification...";
+
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      localStorage.setItem("admin_token", data.token);
+      document.getElementById("adminAuthOverlay").style.display = "none";
+      showToast("Connexion réussie ! Bienvenue dans l'Espace Organisateur.");
+      await loadTournaments();
+      await loadAdminToolsData();
+    } else {
+      errorBox.textContent = data.error || "Identifiant ou mot de passe incorrect.";
+      errorBox.style.display = "block";
+    }
+  } catch (err) {
+    errorBox.textContent = "Erreur de connexion au serveur.";
+    errorBox.style.display = "block";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Se connecter";
+  }
+}
+
+function logoutAdmin() {
+  localStorage.removeItem("admin_token");
+  window.location.href = "/";
+}
+
 // ---------------- DOM Ready ----------------
 document.addEventListener("DOMContentLoaded", async () => {
   setupTabs();
   setupEventListeners();
   await loadNetworkInfo();
-  await loadTournaments();
-  await loadAdminToolsData();
+  const authed = await checkAdminAuth();
+  if (authed) {
+    await loadTournaments();
+    await loadAdminToolsData();
+  }
 });
 
 async function loadNetworkInfo() {
@@ -47,7 +120,8 @@ async function loadNetworkInfo() {
 }
 
 function getPublicTournamentUrl(tournamentId) {
-  if (serverNetworkInfo && serverNetworkInfo.local_ip && serverNetworkInfo.local_ip !== "127.0.0.1") {
+  const isLocalhost = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
+  if (isLocalhost && serverNetworkInfo && serverNetworkInfo.local_ip && serverNetworkInfo.local_ip !== "127.0.0.1") {
     return `http://${serverNetworkInfo.local_ip}:${serverNetworkInfo.port || 8080}/public?t=${tournamentId}`;
   }
   return `${window.location.origin}/public?t=${tournamentId}`;

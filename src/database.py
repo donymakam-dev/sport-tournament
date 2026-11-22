@@ -10,6 +10,8 @@ import os
 import json
 import shutil
 import hashlib
+import hmac
+import secrets
 from datetime import datetime
 from contextlib import contextmanager
 from typing import List, Dict, Any, Optional
@@ -229,8 +231,28 @@ class Database:
                 ip_hash TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            -- Authentification Administrateur / Organisateur
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                salt TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
             """)
             conn.commit()
+
+            # Initialiser le compte administrateur par défaut si absent
+            cursor.execute("SELECT COUNT(*) AS cnt FROM admin_users")
+            if cursor.fetchone()["cnt"] == 0:
+                salt = secrets.token_hex(16)
+                pw_hash = hashlib.pbkdf2_hmac("sha256", "admin2026".encode("utf-8"), salt.encode("utf-8"), 100000).hex()
+                cursor.execute(
+                    "INSERT INTO admin_users (username, password_hash, salt) VALUES (?, ?, ?)",
+                    ("admin", pw_hash, salt)
+                )
+                conn.commit()
 
             # Ensure columns exist if table was created in an older schema
             try:
@@ -245,6 +267,36 @@ class Database:
                     conn.commit()
                 except Exception:
                     pass
+
+    # ---------------- AUTHENTIFICATION ADMIN ----------------
+    def verify_admin(self, username: str, password: str) -> bool:
+        if not username or not password:
+            return False
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT password_hash, salt FROM admin_users WHERE LOWER(username) = LOWER(?)", (username.strip(),))
+            row = cursor.fetchone()
+            if not row:
+                return False
+            expected_hash = hashlib.pbkdf2_hmac(
+                "sha256", password.encode("utf-8"), row["salt"].encode("utf-8"), 100000
+            ).hex()
+            return hmac.compare_digest(row["password_hash"], expected_hash)
+
+    def change_admin_password(self, username: str, old_password: str, new_password: str) -> tuple[bool, str]:
+        if not self.verify_admin(username, old_password):
+            return False, "Ancien mot de passe incorrect."
+        if not new_password or len(new_password) < 4:
+            return False, "Le nouveau mot de passe doit comporter au moins 4 caractères."
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            salt = secrets.token_hex(16)
+            pw_hash = hashlib.pbkdf2_hmac("sha256", new_password.encode("utf-8"), salt.encode("utf-8"), 100000).hex()
+            cursor.execute("UPDATE admin_users SET password_hash = ?, salt = ? WHERE LOWER(username) = LOWER(?)",
+                           (pw_hash, salt, username.strip()))
+            conn.commit()
+        self.log_audit("admin", username, "change_password", "admin_user", None, "***", "***", "Mot de passe modifié")
+        return True, "Mot de passe modifié avec succès."
 
     # ---------------- TOURNAMENTS ----------------
     def list_tournaments(self) -> List[Dict[str, Any]]:

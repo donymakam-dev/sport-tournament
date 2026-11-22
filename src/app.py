@@ -27,6 +27,7 @@ import socket
 import csv
 import io
 import urllib.parse
+import secrets
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from typing import Dict, Any, List, Optional
 
@@ -34,6 +35,24 @@ from database import Database
 from sports_engine import SportsEngine
 from scheduler import TournamentScheduler
 from csv_importer import CsvImporter
+
+# Sessions Administrateur
+ADMIN_SESSIONS: Dict[str, float] = {}
+
+def generate_session_token() -> str:
+    token = secrets.token_hex(24)
+    ADMIN_SESSIONS[token] = time.time() + 86400 * 7  # 7 jours
+    return token
+
+def is_valid_admin_session(token: Optional[str]) -> bool:
+    if not token:
+        return False
+    exp = ADMIN_SESSIONS.get(token)
+    if not exp or time.time() > exp:
+        if token in ADMIN_SESSIONS:
+            del ADMIN_SESSIONS[token]
+        return False
+    return True
 
 def get_local_ip() -> str:
     """Detect local Wi-Fi / Hotspot / LAN IP of this PC."""
@@ -156,7 +175,12 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
             db.record_visit(path, user_agent, client_ip)
 
         # ---------------- API ROUTES ----------------
-        if path == "/api/tournaments":
+        if path == "/api/auth/verify":
+            token = self.headers.get("X-Admin-Token") or self.headers.get("Authorization", "").replace("Bearer ", "").strip()
+            self._send_json({"authenticated": is_valid_admin_session(token)})
+            return
+
+        elif path == "/api/tournaments":
             tournaments = db.list_tournaments()
             self._send_json(tournaments)
             return
@@ -465,10 +489,10 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
                 return
 
         # ---------------- HTML VIEWS ----------------
-        if path in ("/", "/index.html"):
-            self.path = "/index.html"
-        elif path in ("/public", "/public.html"):
+        if path in ("/", "/public", "/public.html"):
             self.path = "/public.html"
+        elif path in ("/admin", "/admin.html", "/index.html"):
+            self.path = "/index.html"
         elif path in ("/match-sheet", "/match_sheet.html"):
             self.path = "/match_sheet.html"
 
@@ -491,7 +515,29 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
         except Exception:
             data = {}
 
-        if path == "/api/tournaments":
+        if path == "/api/auth/login":
+            username = data.get("username", "")
+            password = data.get("password", "")
+            if db.verify_admin(username, password):
+                token = generate_session_token()
+                self._send_json({"success": True, "token": token, "username": username})
+            else:
+                self._send_json({"success": False, "error": "Identifiant ou mot de passe incorrect."}, 401)
+            return
+
+        elif path == "/api/auth/change-password":
+            token = self.headers.get("X-Admin-Token") or self.headers.get("Authorization", "").replace("Bearer ", "").strip()
+            if not is_valid_admin_session(token):
+                self._send_json({"success": False, "error": "Session expirée ou non autorisée."}, 401)
+                return
+            username = data.get("username", "admin")
+            old_pw = data.get("old_password", "")
+            new_pw = data.get("new_password", "")
+            success, msg = db.change_admin_password(username, old_pw, new_pw)
+            self._send_json({"success": success, "message": msg}, 200 if success else 400)
+            return
+
+        elif path == "/api/tournaments":
             t_id = db.create_tournament(
                 name=data.get("name", "Nouveau Tournoi"),
                 sport=data.get("sport", "football"),
