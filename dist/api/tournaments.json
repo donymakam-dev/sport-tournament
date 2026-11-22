@@ -1,0 +1,38 @@
+[
+  {
+    "id": 4,
+    "name": "Coupe du Doyen — Football",
+    "sport": "football",
+    "year": "2025-2026",
+    "format": "league",
+    "status": "active",
+    "created_at": "2026-10-12 23:23:38"
+  },
+  {
+    "id": 3,
+    "name": "Tournoi Inter-Filières de Basketball",
+    "sport": "basketball",
+    "year": "2025-2026",
+    "format": "league",
+    "status": "active",
+    "created_at": "2026-10-12 23:23:35"
+  },
+  {
+    "id": 2,
+    "name": "BFDGHJN",
+    "sport": "basketball",
+    "year": "2025-2026",
+    "format": "league",
+    "status": "active",
+    "created_at": "2026-10-01 22:35:52"
+  },
+  {
+    "id": 1,
+    "name": "Tournoi Inter-Filières de Basketball",
+    "sport": "basketball",
+    "year": "2025-2026",
+    "format": "league",
+    "status": "active",
+    "created_at": "2026-10-01 22:23:22"
+  }
+]

@@ -1,0 +1,523 @@
+{
+  "tournament": {
+    "id": 3,
+    "name": "Tournoi Inter-Filières de Basketball",
+    "sport": "basketball",
+    "year": "2025-2026",
+    "format": "league",
+    "status": "active",
+    "created_at": "2026-10-12 23:23:35"
+  },
+  "teams": [
+    {
+      "id": 8,
+      "tournament_id": 3,
+      "name": "Génie Civil Celtics",
+      "filiere": "Génie Civil",
+      "short_name": "CIV",
+      "color": "#16a34a",
+      "logo_url": "",
+      "player_count": 1,
+      "badges": [
+        {
+          "id": "fair_play",
+          "label": "🤝 Fair-Play d'Or",
+          "color": "#10b981",
+          "description": "Équipe exemplaire au classement de la discipline (0.0 pts)."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "tournament_id": 3,
+      "name": "Génie Info Lakers",
+      "filiere": "Génie Informatique",
+      "short_name": "INF",
+      "color": "#7c3aed",
+      "logo_url": "",
+      "player_count": 3,
+      "badges": []
+    },
+    {
+      "id": 5,
+      "tournament_id": 3,
+      "name": "Mécatronique Bulls",
+      "filiere": "Génie Mécatronique",
+      "short_name": "MEC",
+      "color": "#dc2626",
+      "logo_url": "",
+      "player_count": 3,
+      "badges": [
+        {
+          "id": "leader",
+          "label": "👑 Leader",
+          "color": "#eab308",
+          "description": "Actuellement en tête du championnat."
+        },
+        {
+          "id": "best_attack",
+          "label": "🔥 Attaque de Feu",
+          "color": "#ef4444",
+          "description": "Attaque la plus prolifique avec 74 points/buts inscrits."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "tournament_id": 3,
+      "name": "Électrotechnique Warriors",
+      "filiere": "Génie Électrique",
+      "short_name": "ELE",
+      "color": "#2563eb",
+      "logo_url": "",
+      "player_count": 1,
+      "badges": [
+        {
+          "id": "best_defense",
+          "label": "🛡️ Meilleure Défense",
+          "color": "#0284c7",
+          "description": "Défense la plus solide avec seulement 62 points/buts concédés."
+        }
+      ]
+    }
+  ],
+  "players": [
+    {
+      "id": 16,
+      "team_id": 8,
+      "name": "MOUKOKO Diane",
+      "number": 5,
+      "position": "Meneuse",
+      "photo_url": "",
+      "team_name": "Génie Civil Celtics",
+      "team_short": "CIV",
+      "team_color": "#16a34a"
+    },
+    {
+      "id": 14,
+      "team_id": 6,
+      "name": "YONGA Vanessa",
+      "number": 8,
+      "position": "Pivot",
+      "photo_url": "",
+      "team_name": "Génie Info Lakers",
+      "team_short": "INF",
+      "team_color": "#7c3aed"
+    },
+    {
+      "id": 12,
+      "team_id": 6,
+      "name": "NGOUE Nathalie",
+      "number": 10,
+      "position": "Meneuse",
+      "photo_url": "",
+      "team_name": "Génie Info Lakers",
+      "team_short": "INF",
+      "team_color": "#7c3aed"
+    },
+    {
+      "id": 13,
+      "team_id": 6,
+      "name": "BEKOLO Steve",
+      "number": 30,
+      "position": "Ailier Fort",
+      "photo_url": "",
+      "team_name": "Génie Info Lakers",
+      "team_short": "INF",
+      "team_color": "#7c3aed"
+    },
+    {
+      "id": 10,
+      "team_id": 5,
+      "name": "FOTSO Christian",
+      "number": 7,
+      "position": "Ailier",
+      "photo_url": "",
+      "team_name": "Mécatronique Bulls",
+      "team_short": "MEC",
+      "team_color": "#dc2626"
+    },
+    {
+      "id": 11,
+      "team_id": 5,
+      "name": "TCHOUA Kevin",
+      "number": 11,
+      "position": "Meneur",
+      "photo_url": "",
+      "team_name": "Mécatronique Bulls",
+      "team_short": "MEC",
+      "team_color": "#dc2626"
+    },
+    {
+      "id": 9,
+      "team_id": 5,
+      "name": "KAMGA Jean-Paul",
+      "number": 23,
+      "position": "Arrière",
+      "photo_url": "",
+      "team_name": "Mécatronique Bulls",
+      "team_short": "MEC",
+      "team_color": "#dc2626"
+    },
+    {
+      "id": 15,
+      "team_id": 7,
+      "name": "ONANA Joseph",
+      "number": 15,
+      "position": "Pivot",
+      "photo_url": "",
+      "team_name": "Électrotechnique Warriors",
+      "team_short": "ELE",
+      "team_color": "#2563eb"
+    }
+  ],
+  "matches": [
+    {
+      "id": 3,
+      "tournament_id": 3,
+      "round_name": "Journée 1",
+      "team_home_id": 5,
+      "team_away_id": 6,
+      "score_home": 74,
+      "score_away": 68,
+      "sets_detail": null,
+      "match_date": "2026-10-05",
+      "match_time": "15:30",
+      "venue": "Gymnase Central",
+      "status": "finished",
+      "mvp_player_id": 9,
+      "referee": "",
+      "team_home_name": "Mécatronique Bulls",
+      "team_home_short": "MEC",
+      "team_home_color": "#dc2626",
+      "team_home_logo": "",
+      "team_away_name": "Génie Info Lakers",
+      "team_away_short": "INF",
+      "team_away_color": "#7c3aed",
+      "team_away_logo": "",
+      "mvp_name": "KAMGA Jean-Paul",
+      "mvp_photo": "",
+      "fan_votes_count": 0,
+      "approved_reports_count": 0
+    },
+    {
+      "id": 4,
+      "tournament_id": 3,
+      "round_name": "Journée 1",
+      "team_home_id": 7,
+      "team_away_id": 8,
+      "score_home": 65,
+      "score_away": 62,
+      "sets_detail": null,
+      "match_date": "2026-10-05",
+      "match_time": "17:00",
+      "venue": "Gymnase Central",
+      "status": "finished",
+      "mvp_player_id": 15,
+      "referee": "",
+      "team_home_name": "Électrotechnique Warriors",
+      "team_home_short": "ELE",
+      "team_home_color": "#2563eb",
+      "team_home_logo": "",
+      "team_away_name": "Génie Civil Celtics",
+      "team_away_short": "CIV",
+      "team_away_color": "#16a34a",
+      "team_away_logo": "",
+      "mvp_name": "ONANA Joseph",
+      "mvp_photo": "",
+      "fan_votes_count": 0,
+      "approved_reports_count": 0
+    },
+    {
+      "id": 5,
+      "tournament_id": 3,
+      "round_name": "Journée 2",
+      "team_home_id": 5,
+      "team_away_id": 7,
+      "score_home": null,
+      "score_away": null,
+      "sets_detail": null,
+      "match_date": "2026-10-12",
+      "match_time": "16:00",
+      "venue": "Gymnase Central",
+      "status": "scheduled",
+      "mvp_player_id": null,
+      "referee": "",
+      "team_home_name": "Mécatronique Bulls",
+      "team_home_short": "MEC",
+      "team_home_color": "#dc2626",
+      "team_home_logo": "",
+      "team_away_name": "Électrotechnique Warriors",
+      "team_away_short": "ELE",
+      "team_away_color": "#2563eb",
+      "team_away_logo": "",
+      "mvp_name": null,
+      "mvp_photo": null,
+      "fan_votes_count": 0,
+      "approved_reports_count": 0
+    },
+    {
+      "id": 7,
+      "tournament_id": 3,
+      "round_name": "Journée 1",
+      "team_home_id": 8,
+      "team_away_id": 6,
+      "score_home": null,
+      "score_away": null,
+      "sets_detail": null,
+      "match_date": "2026-11-10",
+      "match_time": "12:05",
+      "venue": "",
+      "status": "scheduled",
+      "mvp_player_id": null,
+      "referee": "",
+      "team_home_name": "Génie Civil Celtics",
+      "team_home_short": "CIV",
+      "team_home_color": "#16a34a",
+      "team_home_logo": "",
+      "team_away_name": "Génie Info Lakers",
+      "team_away_short": "INF",
+      "team_away_color": "#7c3aed",
+      "team_away_logo": "",
+      "mvp_name": null,
+      "mvp_photo": null,
+      "fan_votes_count": 0,
+      "approved_reports_count": 0
+    }
+  ],
+  "standings": [
+    {
+      "team_id": 5,
+      "name": "Mécatronique Bulls",
+      "short_name": "MEC",
+      "filiere": "Génie Mécatronique",
+      "color": "#dc2626",
+      "logo_url": "",
+      "played": 1,
+      "won": 1,
+      "drawn": 0,
+      "lost": 0,
+      "scored": 74,
+      "conceded": 68,
+      "diff": 6,
+      "points": 2,
+      "rank": 1
+    },
+    {
+      "team_id": 7,
+      "name": "Électrotechnique Warriors",
+      "short_name": "ELE",
+      "filiere": "Génie Électrique",
+      "color": "#2563eb",
+      "logo_url": "",
+      "played": 1,
+      "won": 1,
+      "drawn": 0,
+      "lost": 0,
+      "scored": 65,
+      "conceded": 62,
+      "diff": 3,
+      "points": 2,
+      "rank": 2
+    },
+    {
+      "team_id": 8,
+      "name": "Génie Civil Celtics",
+      "short_name": "CIV",
+      "filiere": "Génie Civil",
+      "color": "#16a34a",
+      "logo_url": "",
+      "played": 1,
+      "won": 0,
+      "drawn": 0,
+      "lost": 1,
+      "scored": 62,
+      "conceded": 65,
+      "diff": -3,
+      "points": 1,
+      "rank": 3
+    },
+    {
+      "team_id": 6,
+      "name": "Génie Info Lakers",
+      "short_name": "INF",
+      "filiere": "Génie Informatique",
+      "color": "#7c3aed",
+      "logo_url": "",
+      "played": 1,
+      "won": 0,
+      "drawn": 0,
+      "lost": 1,
+      "scored": 68,
+      "conceded": 74,
+      "diff": -6,
+      "points": 1,
+      "rank": 4
+    }
+  ],
+  "leaders": {
+    "scorers": [
+      {
+        "player_id": 9,
+        "player_name": "KAMGA Jean-Paul",
+        "team_name": "Mécatronique Bulls",
+        "player_number": 23,
+        "total": 28,
+        "rank": 1
+      },
+      {
+        "player_id": 12,
+        "player_name": "NGOUE Nathalie",
+        "team_name": "Génie Info Lakers",
+        "player_number": 10,
+        "total": 22,
+        "rank": 2
+      }
+    ],
+    "three_pointers": [
+      {
+        "player_id": 9,
+        "player_name": "KAMGA Jean-Paul",
+        "team_name": "Mécatronique Bulls",
+        "player_number": 23,
+        "total": 4,
+        "rank": 1
+      }
+    ],
+    "assists": [
+      {
+        "player_id": 12,
+        "player_name": "NGOUE Nathalie",
+        "team_name": "Génie Info Lakers",
+        "player_number": 10,
+        "total": 8,
+        "rank": 1
+      },
+      {
+        "player_id": 9,
+        "player_name": "KAMGA Jean-Paul",
+        "team_name": "Mécatronique Bulls",
+        "player_number": 23,
+        "total": 6,
+        "rank": 2
+      }
+    ],
+    "rebounds": [
+      {
+        "player_id": 13,
+        "player_name": "BEKOLO Steve",
+        "team_name": "Génie Info Lakers",
+        "player_number": 30,
+        "total": 12,
+        "rank": 1
+      },
+      {
+        "player_id": 10,
+        "player_name": "FOTSO Christian",
+        "team_name": "Mécatronique Bulls",
+        "player_number": 7,
+        "total": 9,
+        "rank": 2
+      }
+    ],
+    "mvps": [
+      {
+        "player_id": 9,
+        "player_name": "KAMGA Jean-Paul",
+        "photo_url": "",
+        "total": 1,
+        "rank": 1
+      },
+      {
+        "player_id": 15,
+        "player_name": "ONANA Joseph",
+        "photo_url": "",
+        "total": 1,
+        "rank": 2
+      }
+    ]
+  },
+  "fair_play": [
+    {
+      "team_id": 8,
+      "name": "Génie Civil Celtics",
+      "short_name": "CIV",
+      "filiere": "Génie Civil",
+      "color": "#16a34a",
+      "logo_url": "",
+      "yellow_cards": 0,
+      "red_cards": 0,
+      "suspensions": 0,
+      "fouls": 0,
+      "penalty_points": 0.0,
+      "rank": 1
+    },
+    {
+      "team_id": 6,
+      "name": "Génie Info Lakers",
+      "short_name": "INF",
+      "filiere": "Génie Informatique",
+      "color": "#7c3aed",
+      "logo_url": "",
+      "yellow_cards": 0,
+      "red_cards": 0,
+      "suspensions": 0,
+      "fouls": 0,
+      "penalty_points": 0.0,
+      "rank": 2
+    },
+    {
+      "team_id": 5,
+      "name": "Mécatronique Bulls",
+      "short_name": "MEC",
+      "filiere": "Génie Mécatronique",
+      "color": "#dc2626",
+      "logo_url": "",
+      "yellow_cards": 0,
+      "red_cards": 0,
+      "suspensions": 0,
+      "fouls": 0,
+      "penalty_points": 0.0,
+      "rank": 3
+    },
+    {
+      "team_id": 7,
+      "name": "Électrotechnique Warriors",
+      "short_name": "ELE",
+      "filiere": "Génie Électrique",
+      "color": "#2563eb",
+      "logo_url": "",
+      "yellow_cards": 0,
+      "red_cards": 0,
+      "suspensions": 0,
+      "fouls": 0,
+      "penalty_points": 0.0,
+      "rank": 4
+    }
+  ],
+  "fair_play_rules": {
+    "tournament_id": 3,
+    "yellow_card_points": 1.0,
+    "red_card_points": 3.0,
+    "suspension_points": 2.0,
+    "foul_points": 0.5
+  },
+  "awards": [
+    {
+      "id": 2,
+      "tournament_id": 3,
+      "week_label": "Semaine 1",
+      "player_id": 9,
+      "title": "MVP de la Semaine 1",
+      "description": "Performance magistrale face aux Lakers : 28 pts, 4 tirs primés à 3-pts et 6 passes décisives.",
+      "created_at": "2026-10-12 23:23:38",
+      "player_name": "KAMGA Jean-Paul",
+      "player_number": 23,
+      "player_photo": "",
+      "team_name": "Mécatronique Bulls",
+      "team_short": "MEC",
+      "team_color": "#dc2626",
+      "team_logo": ""
+    }
+  ]
+}

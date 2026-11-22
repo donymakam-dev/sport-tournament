@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+.pytest_cache/
+
+# Binaries & Wheel packages
+*.exe
+*.whl
+
+# Local backups & test databases
+data/backups/
+data/test_*.db
+*.db-journal

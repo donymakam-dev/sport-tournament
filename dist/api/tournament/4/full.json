@@ -1,0 +1,221 @@
+{
+  "tournament": {
+    "id": 4,
+    "name": "Coupe du Doyen — Football",
+    "sport": "football",
+    "year": "2025-2026",
+    "format": "league",
+    "status": "active",
+    "created_at": "2026-10-12 23:23:38"
+  },
+  "teams": [
+    {
+      "id": 10,
+      "tournament_id": 4,
+      "name": "AS Informatique",
+      "filiere": "Informatique",
+      "short_name": "INF",
+      "color": "#2563eb",
+      "logo_url": "",
+      "player_count": 1,
+      "badges": [
+        {
+          "id": "fair_play",
+          "label": "🤝 Fair-Play d'Or",
+          "color": "#10b981",
+          "description": "Équipe exemplaire au classement de la discipline (0.0 pts)."
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "tournament_id": 4,
+      "name": "FC Mécatronique",
+      "filiere": "Mécatronique",
+      "short_name": "MEC",
+      "color": "#dc2626",
+      "logo_url": "",
+      "player_count": 1,
+      "badges": [
+        {
+          "id": "leader",
+          "label": "👑 Leader",
+          "color": "#eab308",
+          "description": "Actuellement en tête du championnat."
+        },
+        {
+          "id": "best_attack",
+          "label": "🔥 Attaque de Feu",
+          "color": "#ef4444",
+          "description": "Attaque la plus prolifique avec 2 points/buts inscrits."
+        },
+        {
+          "id": "best_defense",
+          "label": "🛡️ Meilleure Défense",
+          "color": "#0284c7",
+          "description": "Défense la plus solide avec seulement 1 points/buts concédés."
+        }
+      ]
+    }
+  ],
+  "players": [
+    {
+      "id": 18,
+      "team_id": 10,
+      "name": "KENMOE Arthur",
+      "number": 10,
+      "position": "Milieu",
+      "photo_url": "",
+      "team_name": "AS Informatique",
+      "team_short": "INF",
+      "team_color": "#2563eb"
+    },
+    {
+      "id": 17,
+      "team_id": 9,
+      "name": "ZANGA Patrick",
+      "number": 9,
+      "position": "Attaquant",
+      "photo_url": "",
+      "team_name": "FC Mécatronique",
+      "team_short": "MEC",
+      "team_color": "#dc2626"
+    }
+  ],
+  "matches": [
+    {
+      "id": 6,
+      "tournament_id": 4,
+      "round_name": "Poule A - J1",
+      "team_home_id": 9,
+      "team_away_id": 10,
+      "score_home": 2,
+      "score_away": 1,
+      "sets_detail": null,
+      "match_date": "2026-10-06",
+      "match_time": "16:00",
+      "venue": "Stade Campus",
+      "status": "finished",
+      "mvp_player_id": 17,
+      "referee": "",
+      "team_home_name": "FC Mécatronique",
+      "team_home_short": "MEC",
+      "team_home_color": "#dc2626",
+      "team_home_logo": "",
+      "team_away_name": "AS Informatique",
+      "team_away_short": "INF",
+      "team_away_color": "#2563eb",
+      "team_away_logo": "",
+      "mvp_name": "ZANGA Patrick",
+      "mvp_photo": "",
+      "fan_votes_count": 0,
+      "approved_reports_count": 0
+    }
+  ],
+  "standings": [
+    {
+      "team_id": 9,
+      "name": "FC Mécatronique",
+      "short_name": "MEC",
+      "filiere": "Mécatronique",
+      "color": "#dc2626",
+      "logo_url": "",
+      "played": 1,
+      "won": 1,
+      "drawn": 0,
+      "lost": 0,
+      "scored": 2,
+      "conceded": 1,
+      "diff": 1,
+      "points": 3,
+      "rank": 1
+    },
+    {
+      "team_id": 10,
+      "name": "AS Informatique",
+      "short_name": "INF",
+      "filiere": "Informatique",
+      "color": "#2563eb",
+      "logo_url": "",
+      "played": 1,
+      "won": 0,
+      "drawn": 0,
+      "lost": 1,
+      "scored": 1,
+      "conceded": 2,
+      "diff": -1,
+      "points": 0,
+      "rank": 2
+    }
+  ],
+  "leaders": {
+    "scorers": [
+      {
+        "player_id": 17,
+        "player_name": "ZANGA Patrick",
+        "team_name": "FC Mécatronique",
+        "player_number": 9,
+        "total": 2,
+        "rank": 1
+      },
+      {
+        "player_id": 18,
+        "player_name": "KENMOE Arthur",
+        "team_name": "AS Informatique",
+        "player_number": 10,
+        "total": 1,
+        "rank": 2
+      }
+    ],
+    "three_pointers": [],
+    "assists": [],
+    "rebounds": [],
+    "mvps": [
+      {
+        "player_id": 17,
+        "player_name": "ZANGA Patrick",
+        "photo_url": "",
+        "total": 1,
+        "rank": 1
+      }
+    ]
+  },
+  "fair_play": [
+    {
+      "team_id": 10,
+      "name": "AS Informatique",
+      "short_name": "INF",
+      "filiere": "Informatique",
+      "color": "#2563eb",
+      "logo_url": "",
+      "yellow_cards": 0,
+      "red_cards": 0,
+      "suspensions": 0,
+      "fouls": 0,
+      "penalty_points": 0.0,
+      "rank": 1
+    },
+    {
+      "team_id": 9,
+      "name": "FC Mécatronique",
+      "short_name": "MEC",
+      "filiere": "Mécatronique",
+      "color": "#dc2626",
+      "logo_url": "",
+      "yellow_cards": 0,
+      "red_cards": 0,
+      "suspensions": 0,
+      "fouls": 0,
+      "penalty_points": 0.0,
+      "rank": 2
+    }
+  ],
+  "fair_play_rules": {
+    "tournament_id": 4,
+    "yellow_card_points": 1.0,
+    "red_card_points": 3.0,
+    "suspension_points": 2.0,
+    "foul_points": 0.5
+  },
+  "awards": []
+}

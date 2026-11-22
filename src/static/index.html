@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestionnaire de Tournois Sportifs — Saint Jérôme</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="/vendor/chart.umd.min.js"></script>
+  <script src="/js/i18n.js"></script>
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-box">
+        <span class="brand-badge" data-i18n="school_name">Institut Universitaire Saint Jérôme</span>
+        <h1 class="app-title" data-i18n="app_title">Gestionnaire de Tournois Sportifs</h1>
+      </div>
+      <div class="tournament-selector-box" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <select id="selectTournament" class="select-tournament" aria-label="Sélectionner le tournoi actif">
+          <!-- Populated dynamically -->
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="openModal('modalTournament')" data-i18n="btn_new_tournament">
+          ➕ Nouveau Tournoi
+        </button>
+        <a id="btnOpenPublic" href="/public" target="_blank" class="btn btn-basket btn-sm" data-i18n="btn_public_portal">
+          📱 Portail Spectateur (Public)
+        </a>
+        <button class="nav-action-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Mode Sombre / Clair">🌙</button>
+        <button class="nav-action-btn" id="btnLangToggle" onclick="toggleLanguage()" title="Langue">🇬🇧 EN</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tournament Info Bar -->
+  <div style="background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0.75rem 2rem;">
+    <div style="max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+      <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <h2 id="displayTournamentName" style="font-size: 1.15rem; font-weight: 800; color: var(--primary);">Chargement...</h2>
+        <span id="displayTournamentSport" class="brand-badge" style="background: #e0f2fe; color: #0369a1;">Discipline</span>
+        <span id="displayTournamentYear" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Édition</span>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        Lien public direct : <code id="publicLinkPreview" style="background: rgba(0,0,0,0.05); padding: 0.2rem 0.5rem; border-radius: 4px; color: var(--primary);">...</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <nav class="tabs-nav" aria-label="Navigation des onglets">
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="tab-standings" data-i18n="tab_standings">🏆 Classement</button>
+      <button class="tab-btn" data-tab="tab-matches" data-i18n="tab_matches">📅 Rencontres</button>
+      <button class="tab-btn" data-tab="tab-teams" data-i18n="tab_teams">👥 Équipes & Badges</button>
+      <button class="tab-btn" data-tab="tab-charts">📈 Graphiques Chart.js</button>
+      <button class="tab-btn" data-tab="tab-stats" data-i18n="tab_stats">🎯 Meilleurs Marqueurs & MVPs</button>
+      <button class="tab-btn" data-tab="tab-fairplay" data-i18n="tab_fairplay">🤝 Fair-Play</button>
+      <button class="tab-btn" data-tab="tab-h2h" data-i18n="tab_h2h">⚔️ Face-à-Face</button>
+      <button class="tab-btn" data-tab="tab-predictions" data-i18n="tab_predictions">🎲 Pronostics</button>
+      <button class="tab-btn" data-tab="tab-journalism" data-i18n="tab_journalism">📰 Club Journalisme</button>
+      <button class="tab-btn" data-tab="tab-scheduler" data-i18n="tab_scheduler">🗓️ Calendrier Optimisé</button>
+      <button class="tab-btn" data-tab="tab-admin-tools" data-i18n="tab_admin_tools">⚙️ Sauvegardes & Audit</button>
+      <button class="tab-btn" data-tab="tab-highlights" data-i18n="tab_highlights">⚡ Belles Actions</button>
+      <button class="tab-btn" data-tab="tab-share" data-i18n="tab_share">🔗 Liens & Exports</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- TAB 1: CLASSEMENT -->
+    <section id="tab-standings" class="tab-pane active">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🏆 Classement Officiel en Temps Réel</h2>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="/api/export/standings.csv" class="btn btn-secondary btn-sm" id="btnExportStandingsCsv">📥 Export CSV</a>
+            <button class="btn btn-secondary btn-sm" onclick="window.print()">🖨️ Imprimer</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table standings-table">
+            <thead id="tableHeadStandings"></thead>
+            <tbody id="tableBodyStandings"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: RENCONTRES -->
+    <section id="tab-matches" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📅 Calendrier des Rencontres & Feuilles Officielles</h2>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="/api/export/matches.csv" class="btn btn-secondary btn-sm" id="btnExportMatchesCsv">📥 Export CSV</a>
+            <button class="btn btn-primary" onclick="openModal('modalMatch')">➕ Programmer une Rencontre</button>
+          </div>
+        </div>
+        <div class="matches-grid" id="matchesContainer"></div>
+      </div>
+    </section>
+
+    <!-- TAB 3: EQUIPES & BADGES -->
+    <section id="tab-teams" class="tab-pane">
+      <div class="card" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h2 class="card-title">👥 Effectifs, Compositions & Badges d'Équipe</h2>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Les badges sont attribués automatiquement selon les performances (Meilleure défense, Invaincu, etc.).
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <a href="/api/export/teams.csv" class="btn btn-secondary btn-sm" id="btnExportTeamsCsv">📥 Export CSV</a>
+          <button class="btn btn-primary" onclick="openModal('modalTeam')">➕ Créer une Équipe</button>
+        </div>
+      </div>
+      <div class="teams-grid" id="teamsContainer"></div>
+    </section>
+
+    <!-- TAB 4: GRAPHIQUES CHART.JS (F3.1) -->
+    <section id="tab-charts" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">📈 Statistiques Visuelles par Équipe (Chart.js)</h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Évolution des points, buts/paniers par journée et forme des 5 derniers matchs.
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <label style="font-weight: 700; font-size: 0.9rem;">Choisir une équipe :</label>
+            <select id="selectChartTeam" class="form-control" style="width: auto;" onchange="loadTeamChartsData()">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <!-- 3 Charts Grid -->
+        <div class="charts-grid">
+          
+          <!-- Chart 1: Evolution Points -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3 style="font-size: 1rem; font-weight: 800; color: var(--primary);">📈 Évolution des Points par Journée</h3>
+              <span class="badge-chip" style="background: #3b82f6;">Courbe</span>
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="canvasChartPoints"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Goals / Points Scored vs Conceded -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3 style="font-size: 1rem; font-weight: 800; color: var(--accent-football);">⚽ Buts / Points Marqués vs Encaissés</h3>
+              <span class="badge-chip" style="background: #16a34a;">Histogramme</span>
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="canvasChartGoals"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Form of last 5 matches -->
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <h3 style="font-size: 1rem; font-weight: 800; color: var(--accent-basket);">🔥 Forme des 5 Derniers Matchs</h3>
+              <span class="badge-chip" style="background: #ea580c;">Série</span>
+            </div>
+            <div id="chartFormBadgesContainer" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+              <!-- Rendered via JS -->
+            </div>
+            <div id="chartFormDetails" style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted);">
+              <!-- Details of each form match -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: STATS & BUTEURS -->
+    <section id="tab-stats" class="tab-pane">
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 0.75rem;">
+        <a href="/api/export/scorers.csv" class="btn btn-secondary btn-sm" id="btnExportScorersCsv">📥 Export Buteurs CSV</a>
+      </div>
+      <div class="stats-overview-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🎯 Meilleurs Marqueurs / Buteurs</h3>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>Joueur</th>
+                <th>Équipe</th>
+                <th style="text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="tableBodyScorers"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">⭐ Hommes du Match (MVP)</h3>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th>Joueur</th>
+                <th style="text-align: right;">Trophées</th>
+              </tr>
+            </thead>
+            <tbody id="tableBodyMvps"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: FAIR-PLAY (F3.3) -->
+    <section id="tab-fairplay" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title" data-i18n="fp_title">🤝 Classement du Fair-Play</h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;" data-i18n="fp_subtitle">
+              L'équipe avec le moins de points de pénalité est première au classement.
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="openModal('modalFairPlay')">
+            ⚙️ Configurer le Barème Fair-Play
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead id="tableHeadFairPlay"></thead>
+            <tbody id="tableBodyFairPlay"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 7: FACE-A-FACE HEAD-TO-HEAD (F3.2) -->
+    <section id="tab-h2h" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title" data-i18n="h2h_title">⚔️ Historique des Confrontations Directes</h2>
+        </div>
+        
+        <div class="h2h-selector-bar">
+          <label style="font-weight: 800;">Équipe 1 :</label>
+          <select id="h2hSelectTeam1" class="form-control" style="width: auto; min-width: 200px;"></select>
+          <span style="font-weight: 900; color: var(--text-muted);">VS</span>
+          <label style="font-weight: 800;">Équipe 2 :</label>
+          <select id="h2hSelectTeam2" class="form-control" style="width: auto; min-width: 200px;"></select>
+          <button class="btn btn-primary" onclick="loadHeadToHeadComparison()">Comparer l'Historique</button>
+        </div>
+
+        <div id="h2hResultsContainer" style="display: none;">
+          <div class="h2h-score-board">
+            <div class="h2h-team-col">
+              <h3 id="h2hTeam1Name" style="font-size: 1.3rem; font-weight: 900;">Équipe 1</h3>
+              <div class="h2h-win-stat" id="h2hTeam1Wins">0</div>
+              <div style="font-size: 0.85rem; opacity: 0.85;">Victoires</div>
+              <div style="font-size: 0.85rem; margin-top: 4px;" id="h2hTeam1Scored">0 buts/pts</div>
+            </div>
+            <div style="text-align: center; padding: 0 1.5rem;">
+              <div style="font-size: 1.8rem; font-weight: 900; color: #f59e0b;" id="h2hTotalMatches">0</div>
+              <div style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Matchs Joués</div>
+              <div style="font-size: 0.85rem; margin-top: 4px;" id="h2hDrawsCount">0 nuls</div>
+            </div>
+            <div class="h2h-team-col">
+              <h3 id="h2hTeam2Name" style="font-size: 1.3rem; font-weight: 900;">Équipe 2</h3>
+              <div class="h2h-win-stat" id="h2hTeam2Wins">0</div>
+              <div style="font-size: 0.85rem; opacity: 0.85;">Victoires</div>
+              <div style="font-size: 0.85rem; margin-top: 4px;" id="h2hTeam2Scored">0 buts/pts</div>
+            </div>
+          </div>
+
+          <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;">Historique de toutes les rencontres :</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Tournoi / Compétition</th>
+                <th>Journée</th>
+                <th>Rencontre</th>
+                <th>Score</th>
+                <th>Vainqueur</th>
+              </tr>
+            </thead>
+            <tbody id="tableBodyH2HMatches"></tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 8: PRONOSTICS DES ELEVES (F4.1) -->
+    <section id="tab-predictions" class="tab-pane">
+      <div class="card" style="margin-bottom: 1.25rem;">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title" data-i18n="pred_title">🎯 Jeu de Pronostics des Élèves</h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;" data-i18n="pred_subtitle">
+              Pronostiquez les scores avant le coup d'envoi ! (3 pts score exact, 1 pt bonne issue)
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalSubmitPrediction')">
+            ✍️ Déposer un Pronostic
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;" class="pred-grid">
+          <div>
+            <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;" data-i18n="pred_rank_students">🏆 Classement Général des Élèves</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">#</th>
+                  <th>Élève</th>
+                  <th>Filière / École</th>
+                  <th>Scores Exacts</th>
+                  <th style="text-align: right;">Points</th>
+                </tr>
+              </thead>
+              <tbody id="tableBodyPredStudents"></tbody>
+            </table>
+          </div>
+          <div>
+            <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 0.75rem;" data-i18n="pred_rank_schools">🏫 Classement par Établissement</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">#</th>
+                  <th>Établissement</th>
+                  <th>Pronostiqueurs</th>
+                  <th>Moyenne</th>
+                  <th style="text-align: right;">Points Totaux</th>
+                </tr>
+              </thead>
+              <tbody id="tableBodyPredSchools"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 9: JOURNALISME SCOLAIRE (F4.3) -->
+    <section id="tab-journalism" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">📰 Comptes Rendus du Club de Journalisme</h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Rédaction et modération des articles officiels sur les rencontres.
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalWriteArticle')">
+            ✍️ Rédiger un Compte Rendu
+          </button>
+        </div>
+        <div id="journalismArticlesList" style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 10: OPTIMISATION DU CALENDRIER (F5.1) -->
+    <section id="tab-scheduler" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title" data-i18n="sched_title">🗓️ Optimisation et Génération du Calendrier</h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Génération automatique sous contraintes (disponibilité terrains, repos min. 2 jours, exclusion des jours d'examens).
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('modalScheduler')">
+            ⚡ Configurer & Lancer le Générateur
+          </button>
+        </div>
+
+        <div id="schedulerPreviewContainer" style="display: none; margin-top: 1rem;">
+          <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid var(--primary-light); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <strong style="color: var(--primary);" id="schedSummaryTitle">6 matchs générés avec succès</strong>
+              <div style="font-size: 0.85rem; color: var(--text-muted);" id="schedSummarySub">Aucun conflit détecté. Prévisualisation avant enregistrement.</div>
+            </div>
+            <button class="btn btn-success" onclick="commitGeneratedSchedule()">
+              ✅ Confirmer & Publier le Calendrier
+            </button>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Journée</th>
+                <th>Date</th>
+                <th>Heure</th>
+                <th>Terrain</th>
+                <th>Rencontre</th>
+              </tr>
+            </thead>
+            <tbody id="tableBodySchedPreview"></tbody>
+          </table>
+        </div>
+
+        <div id="schedulerEmptyPlaceholder" style="padding: 2.5rem; text-align: center; color: var(--text-muted);">
+          Cliquez sur <strong>« ⚡ Configurer & Lancer le Générateur »</strong> pour calculer automatiquement un calendrier optimisé pour ce tournoi.
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 11: SAUVEGARDES, AUDIT & IMPORT CSV (F5.2, F5.4, F6.4, F6.5) -->
+    <section id="tab-admin-tools" class="tab-pane">
+      
+      <!-- Top 3 Admin Cards: Stats, CSV, Backups -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+        
+        <!-- F6.4: Privacy Stats -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title" style="font-size: 1.05rem;">📊 Statistiques de Visite (F6.4)</h3>
+          </div>
+          <div style="padding: 0.5rem 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>Visiteurs uniques aujourd'hui :</span>
+              <strong id="statTodayUniques" style="color: var(--primary);">0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span>Total pages vues aujourd'hui :</span>
+              <strong id="statTodayTotal">0</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Total historique :</span>
+              <strong id="statAllTime">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- F5.2: CSV Importer -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title" style="font-size: 1.05rem;">📁 Import CSV par Lot (F5.2)</h3>
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            Importez vos équipes et joueurs avec rapport de validation avant enregistrement.
+          </p>
+          <div style="display: flex; gap: 0.5rem;">
+            <a href="/api/templates/import-csv" class="btn btn-secondary btn-sm">📥 Modèle CSV</a>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modalImportCsv')">📤 Importer un fichier</button>
+          </div>
+        </div>
+
+        <!-- F5.4: Automatic Backups -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title" style="font-size: 1.05rem;">💾 Sauvegardes SQLite (F5.4)</h3>
+            <button class="btn btn-secondary btn-sm" onclick="createBackupNow()">➕ Sauvegarder</button>
+          </div>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Rétention stricte des 14 dernières sauvegardes avec restauration testée.
+          </p>
+          <div id="backupsListContainer" style="max-height: 120px; overflow-y: auto; font-size: 0.85rem;"></div>
+        </div>
+
+      </div>
+
+      <!-- F6.5: Audit Logs Table -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">🛡️ Journal des Modifications Immuable (Audit Log F6.5)</h2>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Traçabilité complète de chaque score saisi, calendrier modifié ou action effectuée.
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">🔄 Actualiser</button>
+        </div>
+        <div class="table-responsive" style="max-height: 350px;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date & Heure</th>
+                <th>Rôle / Auteur</th>
+                <th>Action</th>
+                <th>Cible</th>
+                <th>Ancienne Valeur</th>
+                <th>Nouvelle Valeur</th>
+                <th>Détails</th>
+              </tr>
+            </thead>
+            <tbody id="tableBodyAuditLogs"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 12: HIGHLIGHTS & BELLES ACTIONS -->
+    <section id="tab-highlights" class="tab-pane">
+      <div class="card" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h2 class="card-title">⚡ Belles Actions, Vidéos & Moments Forts</h2>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Revivez les dunks, buts spectaculaires, tirs clutchs et gestes décisifs.
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modalHighlight')">
+          ⚡ Ajouter une Belle Action
+        </button>
+      </div>
+      <div class="admin-hl-grid" id="adminHighlightsList"></div>
+    </section>
+
+    <!-- TAB 13: PARTAGE & RESEAUX -->
+    <section id="tab-share" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🔗 Partage & Liens Directs</h2>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Lien Universel pour les spectateurs (Smartphones & PC sur le réseau) :</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="shareLinkInput" class="form-control" readonly>
+            <button class="btn btn-primary" onclick="copyPublicLink()">📋 Copier</button>
+          </div>
+          <small style="color: var(--text-muted); display: block; margin-top: 0.4rem;">
+            Tous les étudiants connectés au même réseau Wi-Fi ou point d'accès peuvent suivre les résultats en direct.
+          </small>
+        </div>
+
+        <div class="card" style="background: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.2); margin-top: 1.5rem;">
+          <h3 style="color: #166534; font-size: 1.05rem; margin-bottom: 0.5rem;">📲 Générateur de Fiche WhatsApp</h3>
+          <p style="font-size: 0.9rem; color: #14532d; margin-bottom: 1rem;">
+            Générez un texte prêt à coller dans les groupes WhatsApp de la promotion (Classement officiel, derniers résultats, Homme du match et lien direct).
+          </p>
+          <button class="btn btn-success" onclick="generateWhatsAppRecap()">
+            📋 Copier le Résumé WhatsApp
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal Tournament -->
+  <div class="modal-overlay" id="modalTournament">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Créer un Nouveau Tournoi</h3>
+        <button class="modal-close" onclick="closeModal('modalTournament')">&times;</button>
+      </div>
+      <form id="formTournament">
+        <div class="form-group">
+          <label class="form-label">Nom du Tournoi :</label>
+          <input type="text" id="tournName" class="form-control" placeholder="ex: Championnat Universitaire 2026" required>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Discipline Sportive :</label>
+            <select id="tournSport" class="form-control" required>
+              <option value="football">⚽ Football (3/1/0 pts)</option>
+              <option value="basketball">🏀 Basketball (2/1 pts - Règle FIBA)</option>
+              <option value="handball">🤾 Handball (2/1/0 pts)</option>
+              <option value="volleyball">🏐 Volleyball (Sets 3-0, 3-1, 3-2)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Édition / Année :</label>
+            <input type="text" id="tournYear" class="form-control" value="2025-2026" required>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalTournament')">Annuler</button>
+          <button type="submit" class="btn btn-primary">Créer le Tournoi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Team -->
+  <div class="modal-overlay" id="modalTeam">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Ajouter une Équipe</h3>
+        <button class="modal-close" onclick="closeModal('modalTeam')">&times;</button>
+      </div>
+      <form id="formTeam">
+        <div class="form-group">
+          <label class="form-label">Nom de l'équipe :</label>
+          <input type="text" id="teamName" class="form-control" placeholder="ex: Mécatronique Bulls" required>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Filière / École :</label>
+            <input type="text" id="teamFiliere" class="form-control" placeholder="ex: Génie Informatique">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Abbreviation (3 lettres) :</label>
+            <input type="text" id="teamShort" class="form-control" maxlength="4" placeholder="ex: MEC">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Couleur Principale :</label>
+            <input type="color" id="teamColor" class="form-control" value="#1e3a8a">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo (Fichier optionnel) :</label>
+            <input type="file" id="teamLogoFile" class="form-control" accept="image/*">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalTeam')">Annuler</button>
+          <button type="submit" class="btn btn-primary">Créer l'Équipe</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Player -->
+  <div class="modal-overlay" id="modalPlayer">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalPlayerTitle">Ajouter un Joueur</h3>
+        <button class="modal-close" onclick="closeModal('modalPlayer')">&times;</button>
+      </div>
+      <form id="formPlayer">
+        <input type="hidden" id="playerTeamId">
+        <input type="hidden" id="playerEditId">
+        <div class="form-group">
+          <label class="form-label">Nom & Prénoms :</label>
+          <input type="text" id="playerName" class="form-control" placeholder="ex: KAMGA Jean-Paul" required>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Numéro de maillot (Dorsal) :</label>
+            <input type="number" id="playerNumber" class="form-control" value="10" min="0" max="99" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Poste :</label>
+            <input type="text" id="playerPosition" class="form-control" placeholder="ex: Meneur / Attaquant / Défenseur">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Âge :</label>
+            <input type="number" id="playerAge" class="form-control" placeholder="ex: 21" min="10" max="70">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Poids :</label>
+            <input type="text" id="playerWeight" class="form-control" placeholder="ex: 75 kg">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Taille :</label>
+            <input type="text" id="playerHeight" class="form-control" placeholder="ex: 1m85">
+          </div>
+        </div>
+        <div class="form-group" style="background: var(--bg-main); padding: 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border); margin-top: 0.5rem;">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-weight: 700;">📸 Photo du joueur (au choix) :</span>
+            <span id="playerPhotoStatusBadge" style="font-size: 0.75rem; color: var(--text-muted);">Optionnelle</span>
+          </label>
+          
+          <!-- Aperçu Photo Actuelle -->
+          <div id="playerPhotoPreviewBox" style="display: none; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; padding: 0.5rem; background: #fff; border-radius: 8px; border: 1px solid var(--border);">
+            <img id="playerPhotoPreviewImg" src="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);" alt="Aperçu">
+            <div style="flex: 1;">
+              <div style="font-size: 0.82rem; font-weight: 700;">Photo sélectionnée</div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);" id="playerPhotoPreviewInfo">Enregistrée</div>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; color: #dc2626;" onclick="removePlayerPhoto()">🗑️ Supprimer</button>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Téléverser une image locale (JPG, PNG) :</span>
+              <input type="file" id="playerPhotoFile" class="form-control" accept="image/*">
+            </div>
+            <div>
+              <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.2rem;">Ou renseigner l'adresse web (URL) d'une image :</span>
+              <input type="url" id="playerPhotoUrl" class="form-control" placeholder="https://exemple.com/photo.jpg">
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalPlayer')">Annuler</button>
+          <button type="submit" id="btnSubmitPlayer" class="btn btn-primary">Inscrire le Joueur</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Match -->
+  <div class="modal-overlay" id="modalMatch">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Programmer une Rencontre</h3>
+        <button class="modal-close" onclick="closeModal('modalMatch')">&times;</button>
+      </div>
+      <form id="formMatch">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Équipe Domicile :</label>
+            <select id="matchHomeTeam" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Équipe Extérieur :</label>
+            <select id="matchAwayTeam" class="form-control" required></select>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Journée / Phase :</label>
+            <input type="text" id="matchRound" class="form-control" value="Journée 1" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Arbitre :</label>
+            <input type="text" id="matchReferee" class="form-control" placeholder="Arbitre Principal">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Date :</label>
+            <input type="date" id="matchDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Heure :</label>
+            <input type="time" id="matchTime" class="form-control" value="15:30" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lieu / Terrain :</label>
+          <input type="text" id="matchVenue" class="form-control" value="Gymnase Central">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalMatch')">Annuler</button>
+          <button type="submit" class="btn btn-primary">Programmer le Match</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Score -->
+  <div class="modal-overlay" id="modalScore">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Saisir le Score Officiel</h3>
+        <button class="modal-close" onclick="closeModal('modalScore')">&times;</button>
+      </div>
+      <form id="formScore">
+        <input type="hidden" id="scoreMatchId">
+        <div style="display: flex; justify-content: space-around; align-items: center; margin: 1.5rem 0;">
+          <div style="text-align: center;">
+            <div id="scoreModalHomeName" style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">Domicile</div>
+            <input type="number" id="scoreHome" class="form-control" style="font-size: 1.8rem; width: 90px; text-align: center;" min="0" required>
+          </div>
+          <div style="font-size: 1.5rem; font-weight: 900; color: var(--text-muted);">-</div>
+          <div style="text-align: center;">
+            <div id="scoreModalAwayName" style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">Extérieur</div>
+            <input type="number" id="scoreAway" class="form-control" style="font-size: 1.8rem; width: 90px; text-align: center;" min="0" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">⭐ Élection de l'Homme du Match (MVP) :</label>
+          <select id="scoreMvpSelect" class="form-control">
+            <option value="">-- Aucun MVP désigné --</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalScore')">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer le Score</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Fair Play Rules (F3.3) -->
+  <div class="modal-overlay" id="modalFairPlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ Barème des Pénalités Fair-Play</h3>
+        <button class="modal-close" onclick="closeModal('modalFairPlay')">&times;</button>
+      </div>
+      <form id="formFairPlayRules">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" id="labelFpYellow">Points Carton Jaune :</label>
+            <input type="number" step="0.5" id="fpYellowPts" class="form-control" value="1.0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="labelFpRed">Points Carton Rouge :</label>
+            <input type="number" step="0.5" id="fpRedPts" class="form-control" value="3.0" required>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label" id="labelFpSuspension">Points Suspension 2 min / Technique :</label>
+            <input type="number" step="0.5" id="fpSuspensionPts" class="form-control" value="2.0" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" id="labelFpFoul">Points Faute Ordinaire / Perso :</label>
+            <input type="number" step="0.5" id="fpFoulPts" class="form-control" value="0.5" required>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalFairPlay')">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer le Barème</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal CSV Importer (F5.2) -->
+  <div class="modal-overlay" id="modalImportCsv">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📤 Importation d'Équipes & Joueurs par CSV</h3>
+        <button class="modal-close" onclick="closeModal('modalImportCsv')">&times;</button>
+      </div>
+      <div>
+        <div class="form-group">
+          <label class="form-label">Sélectionnez votre fichier CSV (séparateur virgule ou point-virgule) :</label>
+          <input type="file" id="csvFileInput" class="form-control" accept=".csv,text/csv">
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+          <a href="/api/templates/import-csv" class="btn btn-secondary btn-sm">📥 Télécharger le Modèle Type</a>
+          <button class="btn btn-primary btn-sm" onclick="previewCsvFile()">🔍 Analyser & Prévisualiser</button>
+        </div>
+
+        <div id="csvReportWrapper" style="display: none; margin-top: 1.25rem;">
+          <div id="csvSummaryBanner" style="font-weight: 800; margin-bottom: 0.5rem;"></div>
+          <div class="import-report-box" id="csvReportBox"></div>
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+            <button class="btn btn-secondary" onclick="closeModal('modalImportCsv')">Annuler</button>
+            <button class="btn btn-success" id="btnConfirmCsvCommit" onclick="commitCsvImport()">✅ Confirmer l'Importation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Scheduler (F5.1) -->
+  <div class="modal-overlay" id="modalScheduler">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🗓️ Générateur Optimisé de Calendrier</h3>
+        <button class="modal-close" onclick="closeModal('modalScheduler')">&times;</button>
+      </div>
+      <form id="formScheduler">
+        <div class="form-group">
+          <label class="form-label" data-i18n="sched_venues_label">Terrains disponibles (séparés par virgule) :</label>
+          <input type="text" id="schedVenues" class="form-control" value="Terrain Principal, Gymnase Central" required>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Date de Début :</label>
+            <input type="date" id="schedStartDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-i18n="sched_rest_label">Repos minimal (jours) :</label>
+            <input type="number" id="schedRestDays" class="form-control" value="2" min="1" max="14" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="sched_exam_label">Jours d'examens exclus (séparés par virgule) :</label>
+          <input type="text" id="schedExamDates" class="form-control" placeholder="ex: 2026-11-20, 2026-11-21">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalScheduler')">Annuler</button>
+          <button type="submit" class="btn btn-primary" data-i18n="sched_btn_generate">⚡ Lancer l'Optimisation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Predictions Submission (F4.1) -->
+  <div class="modal-overlay" id="modalSubmitPrediction">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">🎯 Déposer un Pronostic</h3>
+        <button class="modal-close" onclick="closeModal('modalSubmitPrediction')">&times;</button>
+      </div>
+      <form id="formPrediction">
+        <div class="form-group">
+          <label class="form-label" data-i18n="pred_name_label">Votre Nom / Pseudo d'élève :</label>
+          <input type="text" id="predStudentName" class="form-control" placeholder="ex: Arthur K." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="pred_school_label">Votre Filière / Établissement :</label>
+          <input type="text" id="predStudentSchool" class="form-control" placeholder="ex: Génie Informatique" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rencontre à pronostiquer :</label>
+          <select id="predMatchSelect" class="form-control" required></select>
+        </div>
+        <div style="display: flex; justify-content: space-around; align-items: center; margin: 1rem 0;">
+          <div style="text-align: center;">
+            <div id="predHomeTeamLabel" style="font-weight: 800; font-size: 0.95rem; margin-bottom: 0.3rem;">Domicile</div>
+            <input type="number" id="predScoreHome" class="form-control" style="width: 75px; text-align: center;" min="0" value="0" required>
+          </div>
+          <div style="font-weight: 900;">-</div>
+          <div style="text-align: center;">
+            <div id="predAwayTeamLabel" style="font-weight: 800; font-size: 0.95rem; margin-bottom: 0.3rem;">Extérieur</div>
+            <input type="number" id="predScoreAway" class="form-control" style="width: 75px; text-align: center;" min="0" value="0" required>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalSubmitPrediction')">Annuler</button>
+          <button type="submit" class="btn btn-primary" data-i18n="btn_submit_pred">Valider mon pronostic</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Write Article (F4.3) -->
+  <div class="modal-overlay" id="modalWriteArticle">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📰 Rédiger un Compte Rendu de Match</h3>
+        <button class="modal-close" onclick="closeModal('modalWriteArticle')">&times;</button>
+      </div>
+      <form id="formArticle">
+        <div class="form-group">
+          <label class="form-label">Rencontre concernée :</label>
+          <select id="articleMatchSelect" class="form-control" required></select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Auteur (Journaliste / Club média) :</label>
+            <input type="text" id="articleAuthor" class="form-control" placeholder="ex: Club Média Saint Jérôme" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Établissement / Filière :</label>
+            <input type="text" id="articleSchool" class="form-control" placeholder="ex: Génie Informatique">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Titre de l'article :</label>
+          <input type="text" id="articleTitle" class="form-control" placeholder="ex: Victoire éclatante dans le derby" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Corps du compte rendu :</label>
+          <textarea id="articleContent" class="form-control" rows="5" placeholder="Décrivez les temps forts, l'ambiance et la performance des joueurs..." required></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalWriteArticle')">Annuler</button>
+          <button type="submit" class="btn btn-primary">Soumettre pour Validation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Highlight -->
+  <div class="modal-overlay" id="modalHighlight">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title">⚡ Publier une Belle Action / Highlight</h3>
+        <button class="modal-close" onclick="closeModal('modalHighlight')">&times;</button>
+      </div>
+      <form id="formHighlight">
+        <div class="form-group">
+          <label class="form-label">Titre percutant de l'action :</label>
+          <input type="text" id="hlTitle" class="form-control" placeholder="ex: Dunk surpuissant au 4e quart-temps !" required>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Type d'action :</label>
+            <select id="hlActionType" class="form-control" required>
+              <option value="dunk">🏀 Dunk / Smash</option>
+              <option value="three_pointer">🎯 Tir primé à 3-points</option>
+              <option value="goal">⚽ But d'anthologie</option>
+              <option value="save">🧤 Arrêt décisif</option>
+              <option value="assist">👟 Passe lumineuse</option>
+              <option value="skill">🤾 Geste technique</option>
+              <option value="celebration">🎉 Célébration</option>
+              <option value="action">🔥 Autre moment fort</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Joueur auteur :</label>
+            <select id="hlPlayerSelect" class="form-control">
+              <option value="">-- Aucun joueur spécifique --</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rencontre associée :</label>
+          <select id="hlMatchSelect" class="form-control">
+            <option value="">-- Non rattaché --</option>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Type de Média :</label>
+            <select id="hlMediaType" class="form-control">
+              <option value="photo">📷 Photo</option>
+              <option value="video">🎥 Vidéo</option>
+              <option value="embed">🔗 Lien Externe</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fichier Photo ou Vidéo :</label>
+            <input type="file" id="hlFileInput" class="form-control" accept="image/*,video/mp4,video/webm">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description ou commentaire :</label>
+          <textarea id="hlDescription" class="form-control" rows="2" placeholder="Décrivez le contexte de cette belle action..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalHighlight')">Annuler</button>
+          <button type="submit" class="btn btn-primary">⚡ Mettre en Ligne</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

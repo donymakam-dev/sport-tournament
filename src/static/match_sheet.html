@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feuille de Match Officielle A4 — Saint Jérôme Douala</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+    }
+    body {
+      background: #f8fafc;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .no-print-bar {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.75rem 1.25rem;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .btn {
+      padding: 0.5rem 1rem;
+      font-weight: 700;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-decoration: none;
+    }
+    .btn-primary { background: #1e3a8a; color: #fff; }
+    .btn-secondary { background: #e2e8f0; color: #334155; }
+
+    /* A4 SHEET CONTAINER */
+    .sheet-page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 12mm 15mm;
+      background: #ffffff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* HEADER */
+    .sheet-header {
+      border-bottom: 2px solid #1e3a8a;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .inst-title {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #1e3a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .sheet-doc-title {
+      font-size: 16pt;
+      font-weight: 900;
+      color: #0f172a;
+      text-align: center;
+      margin: 4px 0;
+    }
+    .sheet-badge {
+      display: inline-block;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 2px 8px;
+      font-size: 8.5pt;
+      font-weight: 700;
+      border-radius: 4px;
+      color: #475569;
+    }
+
+    /* MATCH METADATA GRID */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 9pt;
+    }
+    .meta-item strong {
+      display: block;
+      color: #64748b;
+      font-size: 7.5pt;
+      text-transform: uppercase;
+    }
+    .meta-item span {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* TEAMS & ROSTERS SIDE BY SIDE */
+    .rosters-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .team-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .team-header-bar {
+      background: #1e3a8a;
+      color: #ffffff;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .team-header-bar.away {
+      background: #dc2626;
+    }
+    .team-name {
+      font-size: 11pt;
+      font-weight: 800;
+      color: #ffffff;
+    }
+    .team-filiere {
+      font-size: 8pt;
+      opacity: 0.9;
+      color: #ffffff;
+    }
+
+    /* TABLE */
+    table.sheet-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 8pt;
+    }
+    table.sheet-table th {
+      background: #f1f5f9;
+      padding: 4px 6px;
+      border-bottom: 1px solid #cbd5e1;
+      font-weight: 700;
+      color: #475569;
+      text-align: left;
+    }
+    table.sheet-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+    }
+    table.sheet-table tr:nth-child(even) {
+      background: #fafafa;
+    }
+    .check-box-col {
+      width: 25px;
+      text-align: center;
+    }
+    .num-col {
+      width: 28px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    /* SUMMARY / SCORES BOX */
+    .summary-section {
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px 14px;
+      background: #ffffff;
+      margin-bottom: 12px;
+    }
+    .score-banner {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px dashed #cbd5e1;
+      margin-bottom: 8px;
+    }
+    .score-block {
+      text-align: center;
+    }
+    .score-team-label {
+      font-size: 10pt;
+      font-weight: 800;
+      color: #1e3a8a;
+    }
+    .score-box-display {
+      display: inline-block;
+      width: 45px;
+      height: 35px;
+      line-height: 35px;
+      font-size: 16pt;
+      font-weight: 900;
+      border: 2px solid #0f172a;
+      border-radius: 6px;
+      background: #f8fafc;
+      margin-top: 4px;
+    }
+    .incidents-box {
+      font-size: 8pt;
+      color: #475569;
+      min-height: 25px;
+    }
+
+    /* SIGNATURES BLOCK */
+    .signatures-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      border-top: 1px solid #cbd5e1;
+      padding-top: 10px;
+    }
+    .sign-box {
+      border: 1px dashed #94a3b8;
+      border-radius: 4px;
+      height: 55px;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-size: 7.5pt;
+      background: #fafafa;
+    }
+    .sign-title {
+      font-weight: 700;
+      color: #334155;
+      text-align: center;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 2px;
+    }
+    .sign-sub {
+      color: #94a3b8;
+      font-size: 6.5pt;
+      text-align: center;
+    }
+
+    /* PRINT RULES */
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+      }
+      .no-print-bar {
+        display: none !important;
+      }
+      .sheet-page {
+        width: 100% !important;
+        min-height: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Controls (hidden when printing) -->
+  <div class="no-print-bar">
+    <div>
+      <span style="font-weight: 800; color: #1e3a8a;">Feuille de Match Officielle</span>
+      <span style="color: #64748b; font-size: 0.85rem; margin-left: 0.5rem;" id="matchRefText">Chargement...</span>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="/" class="btn btn-secondary">⬅️ Retour au site</a>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / Enregistrer PDF (A4)</button>
+    </div>
+  </div>
+
+  <!-- A4 Page Container -->
+  <div class="sheet-page" id="sheetContainer">
+
+    <!-- Header -->
+    <div>
+      <div class="sheet-header">
+        <div>
+          <div class="inst-title">Institut Universitaire Saint Jérôme de Douala</div>
+          <div style="font-size: 8pt; color: #64748b;">Commission des Sports & Tournois Inter-Établissements</div>
+        </div>
+        <div style="text-align: right;">
+          <span class="sheet-badge" id="sheetSportBadge">DISCIPLINE</span>
+          <div style="font-size: 7.5pt; color: #64748b; margin-top: 3px;" id="sheetYear">2025-2026</div>
+        </div>
+      </div>
+
+      <div class="sheet-doc-title">FEUILLE DE MATCH OFFICIELLE</div>
+
+      <!-- Metadata Grid -->
+      <div class="meta-grid">
+        <div class="meta-item">
+          <strong>Compétition</strong>
+          <span id="sheetTournamentName">Tournoi Officiel</span>
+        </div>
+        <div class="meta-item">
+          <strong>Journée / Phase</strong>
+          <span id="sheetRound">Journée 1</span>
+        </div>
+        <div class="meta-item">
+          <strong>Date & Heure</strong>
+          <span id="sheetDateTime">--/--/---- --:--</span>
+        </div>
+        <div class="meta-item">
+          <strong>Lieu & Arbitre</strong>
+          <span id="sheetVenueRef">Terrain Principal (Arbitre)</span>
+        </div>
+      </div>
+
+      <!-- Rosters side by side -->
+      <div class="rosters-container">
+        
+        <!-- HOME TEAM -->
+        <div class="team-box">
+          <div class="team-header-bar" id="homeHeaderBar">
+            <div>
+              <div class="team-name" id="homeTeamName">Équipe Domicile</div>
+              <div class="team-filiere" id="homeTeamFiliere">Filière / École</div>
+            </div>
+            <span style="font-size: 8pt; font-weight: 800; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">DOMICILE</span>
+          </div>
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th class="num-col">N°</th>
+                <th>Nom & Prénom</th>
+                <th>Poste</th>
+                <th class="check-box-col" title="Buts ou Points">Pts</th>
+                <th class="check-box-col" title="Carton Jaune">CJ</th>
+                <th class="check-box-col" title="Carton Rouge">CR</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyHomePlayers">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- AWAY TEAM -->
+        <div class="team-box">
+          <div class="team-header-bar away" id="awayHeaderBar">
+            <div>
+              <div class="team-name" id="awayTeamName">Équipe Extérieur</div>
+              <div class="team-filiere" id="awayTeamFiliere">Filière / École</div>
+            </div>
+            <span style="font-size: 8pt; font-weight: 800; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">EXTÉRIEUR</span>
+          </div>
+          <table class="sheet-table">
+            <thead>
+              <tr>
+                <th class="num-col">N°</th>
+                <th>Nom & Prénom</th>
+                <th>Poste</th>
+                <th class="check-box-col" title="Buts ou Points">Pts</th>
+                <th class="check-box-col" title="Carton Jaune">CJ</th>
+                <th class="check-box-col" title="Carton Rouge">CR</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyAwayPlayers">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- Score & Match Summary Box -->
+      <div class="summary-section">
+        <div class="score-banner">
+          <div class="score-block">
+            <div class="score-team-label" id="scoreHomeLabel">DOMICILE</div>
+            <div class="score-box-display" id="scoreHomeBox">-</div>
+          </div>
+          <div style="font-size: 14pt; font-weight: 900; color: #64748b;">VS</div>
+          <div class="score-block">
+            <div class="score-team-label" id="scoreAwayLabel" style="color: #dc2626;">EXTÉRIEUR</div>
+            <div class="score-box-display" id="scoreAwayBox">-</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; font-size: 8pt;">
+          <div>
+            <strong>Événements & Buteurs / Marqueurs :</strong>
+            <div id="sheetEventsList" style="margin-top: 3px; color: #334155;">Aucun événement enregistré</div>
+          </div>
+          <div>
+            <strong>⭐ Homme du Match (MVP) :</strong>
+            <div id="sheetMvpDisplay" style="margin-top: 3px; font-weight: 700; color: #1e3a8a;">Non désigné</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signatures Footer -->
+    <div>
+      <div class="signatures-grid">
+        <div class="sign-box">
+          <div class="sign-title">Capitaine Domicile</div>
+          <div class="sign-sub">Signature & Numéro</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-title">Capitaine Extérieur</div>
+          <div class="sign-sub">Signature & Numéro</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-title">Arbitre Principal</div>
+          <div class="sign-sub">Nom & Signature</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-title">Délégué / Organisation</div>
+          <div class="sign-sub">Cachet & Validation</div>
+        </div>
+      </div>
+      <div style="text-align: center; margin-top: 8px; font-size: 6.5pt; color: #94a3b8;">
+        Document officiel généré automatiquement par le Gestionnaire de Tournois — Institut Universitaire Saint Jérôme de Douala
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const matchId = urlParams.get("id");
+      if (!matchId) {
+        alert("Identifiant de match manquant.");
+        return;
+      }
+      await loadMatchSheet(matchId);
+    });
+
+    async function loadMatchSheet(matchId) {
+      try {
+        const res = await fetch(`/api/matches/${matchId}/sheet`);
+        if (!res.ok) throw new Error("Erreur de chargement");
+        const data = await res.json();
+        renderSheet(data);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("matchRefText").textContent = "Erreur de chargement du match.";
+      }
+    }
+
+    function renderSheet(data) {
+      const m = data.match;
+      const t = data.tournament;
+      const homePlayers = data.home_players || [];
+      const awayPlayers = data.away_players || [];
+      const events = data.events || [];
+
+      document.getElementById("matchRefText").textContent = `Match #${m.id} : ${m.team_home_name} vs ${m.team_away_name}`;
+      document.getElementById("sheetSportBadge").textContent = (t.sport || "SPORT").toUpperCase();
+      document.getElementById("sheetYear").textContent = `Édition : ${t.year || "2025-2026"}`;
+      document.getElementById("sheetTournamentName").textContent = t.name;
+      document.getElementById("sheetRound").textContent = m.round_name || "Journée";
+      document.getElementById("sheetDateTime").textContent = `${m.match_date || "Date à fixer"} à ${m.match_time || "--:--"}`;
+      document.getElementById("sheetVenueRef").textContent = `${m.venue || "Terrain"} (Arbitre: ${m.referee || "Officiel"})`;
+
+      // Home header
+      document.getElementById("homeTeamName").textContent = m.team_home_name;
+      document.getElementById("homeTeamFiliere").textContent = m.team_home_filiere || "Campus Saint Jérôme";
+      document.getElementById("scoreHomeLabel").textContent = m.team_home_name;
+      if (m.team_home_color) {
+        document.getElementById("homeHeaderBar").style.backgroundColor = m.team_home_color;
+      }
+
+      // Away header
+      document.getElementById("awayTeamName").textContent = m.team_away_name;
+      document.getElementById("awayTeamFiliere").textContent = m.team_away_filiere || "Campus Saint Jérôme";
+      document.getElementById("scoreAwayLabel").textContent = m.team_away_name;
+      if (m.team_away_color) {
+        document.getElementById("awayHeaderBar").style.backgroundColor = m.team_away_color;
+      }
+
+      // Scores
+      document.getElementById("scoreHomeBox").textContent = m.score_home !== null ? m.score_home : "";
+      document.getElementById("scoreAwayBox").textContent = m.score_away !== null ? m.score_away : "";
+
+      // MVP
+      document.getElementById("sheetMvpDisplay").textContent = m.mvp_name ? `${m.mvp_name}` : "À désigner à la fin du match";
+
+      // Events text summary
+      if (events.length > 0) {
+        const evLines = events.map(e => `• ${e.minute_or_period ? '[' + e.minute_or_period + '] ' : ''}${e.player_name} (${e.team_name}) : ${e.event_type} (${e.count})`);
+        document.getElementById("sheetEventsList").innerHTML = evLines.join("<br>");
+      }
+
+      // Dynamic headers for sheet table according to sport
+      const isBasketball = (t.sport || "").toLowerCase() === "basketball";
+      const isHandball = (t.sport || "").toLowerCase() === "handball";
+
+      const pen1Title = isBasketball ? "F" : "CJ";
+      const pen1Desc = isBasketball ? "Fautes personnelles" : "Carton Jaune";
+      const pen2Title = isBasketball ? "FT/FA" : (isHandball ? "2'/CR" : "CR");
+      const pen2Desc = isBasketball ? "Fautes Techniques / Antisportives" : (isHandball ? "Suspensions 2 min / Disqualifications" : "Carton Rouge");
+
+      document.querySelectorAll(".sheet-table thead").forEach(th => {
+        th.innerHTML = `
+          <tr>
+            <th class="num-col">N°</th>
+            <th>Nom & Prénom</th>
+            <th>Poste</th>
+            <th class="check-box-col" title="Buts ou Points">Pts</th>
+            <th class="check-box-col" title="${pen1Desc}">${pen1Title}</th>
+            <th class="check-box-col" title="${pen2Desc}">${pen2Title}</th>
+          </tr>
+        `;
+      });
+
+      // Populate Home Roster (fill to at least 10 rows for clean printable sheet)
+      renderRosterTable("tbodyHomePlayers", homePlayers, events, m.team_home_id, isBasketball, isHandball);
+      renderRosterTable("tbodyAwayPlayers", awayPlayers, events, m.team_away_id, isBasketball, isHandball);
+    }
+
+    function renderRosterTable(tbodyId, players, events, teamId, isBasketball, isHandball) {
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = "";
+
+      const rowsCount = Math.max(players.length, 10);
+      for (let i = 0; i < rowsCount; i++) {
+        const p = players[i];
+        const tr = document.createElement("tr");
+
+        if (p) {
+          // Check player events
+          const pEvents = events.filter(e => e.player_id === p.id);
+          const pts = pEvents.filter(e => ["point", "goal", "three_pointer"].includes(e.event_type)).reduce((acc, curr) => acc + (curr.count || 1), 0);
+          
+          let col1Val = "";
+          let col2Val = "";
+          if (isBasketball) {
+            const fouls = pEvents.filter(e => ["foul", "personal_foul"].includes(e.event_type)).reduce((acc, curr) => acc + (curr.count || 1), 0);
+            const tech = pEvents.filter(e => ["technical_foul", "unsportsmanlike_foul", "disqualifying_foul"].includes(e.event_type)).reduce((acc, curr) => acc + (curr.count || 1), 0);
+            col1Val = fouls > 0 ? fouls : "";
+            col2Val = tech > 0 ? (tech >= 2 ? "🔴 " + tech : "⚠️ " + tech) : "";
+          } else if (isHandball) {
+            const yel = pEvents.filter(e => e.event_type === "yellow_card").length;
+            const susp = pEvents.filter(e => ["suspension_2min", "red_card"].includes(e.event_type)).length;
+            col1Val = yel > 0 ? "🟨" : "";
+            col2Val = susp > 0 ? "2' / 🟥" : "";
+          } else {
+            const yel = pEvents.filter(e => e.event_type === "yellow_card").length;
+            const red = pEvents.filter(e => e.event_type === "red_card").length;
+            col1Val = yel > 0 ? "🟨" : "";
+            col2Val = red > 0 ? "🟥" : "";
+          }
+
+          tr.innerHTML = `
+            <td class="num-col">${p.number || "-"}</td>
+            <td><strong>${p.name}</strong></td>
+            <td style="color: #64748b;">${p.position || "Joueur"}</td>
+            <td class="check-box-col">${pts > 0 ? pts : ""}</td>
+            <td class="check-box-col">${col1Val}</td>
+            <td class="check-box-col">${col2Val}</td>
+          `;
+        } else {
+          tr.innerHTML = `
+            <td class="num-col" style="color: #cbd5e1;">.</td>
+            <td></td>
+            <td></td>
+            <td class="check-box-col"></td>
+            <td class="check-box-col"></td>
+            <td class="check-box-col"></td>
+          `;
+        }
+        tbody.appendChild(tr);
+      }
+    }
+  </script>
+</body>
+</html>

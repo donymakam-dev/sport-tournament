@@ -1,0 +1,873 @@
+/* ==========================================================================
+   Sports Tournament Manager — Public Spectator Portal (Radiant Athletic Theme)
+   Institut Universitaire Saint Jérôme de Douala
+   ========================================================================== */
+
+:root, [data-theme="light"] {
+  --bg-body: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #f1f5f9;
+  --bg-header: linear-gradient(135deg, #091e42 0%, #1e3a8a 55%, #2563eb 100%);
+  --header-text: #ffffff;
+  --primary: #1e40af;
+  --primary-light: #eff6ff;
+  --primary-dark: #1e3a8a;
+  --accent: #f59e0b;
+  --accent-gold-bg: #fef3c7;
+  --accent-blue: #0284c7;
+  --accent-blue-bg: #e0f2fe;
+  --accent-green: #10b981;
+  --accent-green-bg: #ecfdf5;
+  --accent-red: #ef4444;
+  --accent-red-bg: #fef2f2;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-subtle: #94a3b8;
+  --border: #e2e8f0;
+  --border-subtle: #f1f5f9;
+  --border-dark: rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+  --shadow-hover: 0 12px 28px -4px rgba(30, 58, 138, 0.12), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  --score-box-bg: #0f172a;
+  --score-box-text: #ffffff;
+  --table-head-bg: #f8fafc;
+  --table-hover: #f1f5f9;
+  --chip-bg: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+  --bg-body: #0b1120;
+  --bg-surface: #151f32;
+  --bg-surface-alt: #1e293b;
+  --bg-header: linear-gradient(135deg, #020617 0%, #0f172a 60%, #1e293b 100%);
+  --header-text: #f8fafc;
+  --primary: #38bdf8;
+  --primary-light: #1e293b;
+  --primary-dark: #0284c7;
+  --accent: #fbbf24;
+  --accent-gold-bg: rgba(245, 158, 11, 0.15);
+  --accent-blue: #38bdf8;
+  --accent-blue-bg: rgba(56, 189, 248, 0.15);
+  --accent-green: #34d399;
+  --accent-green-bg: rgba(16, 185, 129, 0.15);
+  --accent-red: #f87171;
+  --accent-red-bg: rgba(239, 68, 68, 0.15);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-dark: rgba(255, 255, 255, 0.12);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.6);
+  --score-box-bg: #020617;
+  --score-box-text: #f8fafc;
+  --table-head-bg: #0f172a;
+  --table-hover: #1e293b;
+  --chip-bg: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+}
+
+body {
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   Header Banner (Modern Saint Jérôme Athletic Look)
+   ========================================================================== */
+.public-header {
+  background: var(--bg-header);
+  color: var(--header-text);
+  padding: 1.1rem 1.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.public-header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.school-tag {
+  font-size: 0.72rem;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.public-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  color: #ffffff;
+  margin-top: 0.15rem;
+}
+
+.share-action-btn {
+  background: rgba(245, 158, 11, 0.2);
+  border: 1px solid var(--accent);
+  color: #fff;
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+}
+
+.share-action-btn:hover {
+  background: var(--accent);
+  color: #0f172a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.nav-action-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  padding: 0.45rem 0.75rem;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.nav-action-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Navigation Tabs (Sleek Horizontal Scroller)
+   ========================================================================== */
+.public-nav {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 72px;
+  z-index: 40;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.public-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.public-nav-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+}
+
+.p-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 0.6rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 9999px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+}
+
+.p-tab-btn:hover {
+  background: var(--bg-surface-alt);
+  color: var(--text-main);
+}
+
+.p-tab-btn.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(30, 58, 138, 0.1);
+}
+
+/* ==========================================================================
+   Main Content Layout
+   ========================================================================== */
+.public-container {
+  max-width: 1100px;
+  margin: 1.5rem auto;
+  padding: 0 1.25rem;
+  width: 100%;
+  flex: 1;
+}
+
+.p-pane {
+  display: none;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.p-pane.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   Cards & Surfaces
+   ========================================================================== */
+.standings-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 1.5rem;
+}
+
+.table-header-title {
+  padding: 1.15rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-surface);
+}
+
+/* ==========================================================================
+   Standings Table (Modern Sports League Styling)
+   ========================================================================== */
+.p-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.p-table th {
+  background: var(--table-head-bg);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0.85rem 1.1rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.p-table th.th-left, .p-table td.td-left {
+  text-align: left;
+}
+
+.p-table td {
+  padding: 0.95rem 1.1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: center;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.p-table tr:last-child td {
+  border-bottom: none;
+}
+
+.p-table tr:hover td {
+  background: var(--table-hover);
+}
+
+/* Podiums 1, 2, 3 medals */
+.p-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+.p-rank-1 { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+.p-rank-2 { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+.p-rank-3 { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+
+.p-pts {
+  font-weight: 900;
+  font-size: 1.05rem;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 0.25rem 0.65rem;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.diff-positive {
+  color: var(--accent-green);
+  font-weight: 800;
+}
+.diff-negative {
+  color: var(--accent-red);
+  font-weight: 800;
+}
+
+/* ==========================================================================
+   Match Cards (Scoreboard Style)
+   ========================================================================== */
+.p-matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.p-match-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.p-match-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.p-match-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Live Match Pulse Indicator */
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--accent-red-bg);
+  color: var(--accent-red);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-red);
+  animation: livePulse 1.4s infinite;
+}
+
+@keyframes livePulse {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.p-match-duel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.p-match-team {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.p-match-team.away {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.team-color-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.p-match-score {
+  font-size: 1.85rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--score-box-text);
+  min-width: 95px;
+  text-align: center;
+  background: var(--score-box-bg);
+  padding: 0.4rem 0.9rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  font-variant-numeric: tabular-nums;
+}
+
+.p-match-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.p-match-mvp-badge {
+  background: var(--accent-gold-bg);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #b45309;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+[data-theme="dark"] .p-match-mvp-badge {
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   Award Card (Joueur de la Semaine)
+   ========================================================================== */
+.award-hero {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #f59e0b 100%);
+  color: #ffffff;
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  margin-bottom: 1.75rem;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.award-hero::after {
+  content: "★";
+  position: absolute;
+  right: -20px;
+  bottom: -40px;
+  font-size: 180px;
+  color: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.award-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.award-avatar-ph {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #1e3a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 900;
+  border: 4px solid var(--accent);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   ⚡ Highlights & Belles Actions (Feed, Media, Likes & Comments)
+   ========================================================================== */
+.p-highlights-header {
+  margin-bottom: 1.5rem;
+}
+
+.p-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.p-highlight-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.35rem;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.p-highlight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.p-hl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.p-hl-badge {
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: uppercase;
+}
+
+.p-hl-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.p-hl-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.p-hl-player-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.85rem 0.35rem 0.45rem;
+  border-radius: 9999px;
+  width: fit-content;
+}
+
+.p-hl-player-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.p-hl-player-avatar-ph {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.p-hl-player-name {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.p-hl-player-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.p-hl-match-chip {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.p-hl-media-wrapper {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  max-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.p-hl-video, .p-hl-photo {
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  object-fit: contain;
+}
+
+.p-hl-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.p-hl-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.p-like-btn {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.p-like-btn:hover {
+  background: var(--accent-red-bg);
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+  transform: scale(1.05);
+}
+
+.p-like-btn.liked {
+  background: var(--accent-red-bg);
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+
+.p-comments-counter-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* Comments section */
+.p-comments-container {
+  background: var(--bg-surface-alt);
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.p-comment-bubble {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.p-comment-author {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.p-comment-filiere {
+  font-size: 0.72rem;
+  color: var(--primary);
+  font-weight: 700;
+  background: var(--primary-light);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.p-comment-body {
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.p-comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.p-comment-row-top {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.p-comment-input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  outline: none;
+}
+.p-comment-input:focus {
+  border-color: var(--primary);
+}
+
+.p-comment-submit-btn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+/* ==========================================================================
+   Modals & Popups
+   ========================================================================== */
+.p-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.p-modal-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  max-width: 500px;
+  width: 100%;
+  padding: 1.75rem;
+  color: var(--text-main);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================================================
+   Badges, Chips & Progress
+   ========================================================================== */
+.badge-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.prediction-box {
+  background: var(--accent-gold-bg);
+  border: 1px dashed var(--accent);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 0.85rem;
+}
+
+.fan-vote-progress {
+  height: 8px;
+  background: var(--bg-surface-alt);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 6px;
+  border: 1px solid var(--border);
+}
+
+.fan-vote-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .public-title {
+    font-size: 1.15rem;
+  }
+  .p-match-duel {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .p-match-team.away {
+    flex-direction: row;
+    text-align: left;
+  }
+  .p-match-score {
+    width: 100%;
+  }
+  .award-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+}

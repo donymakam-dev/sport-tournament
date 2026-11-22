@@ -1,0 +1,31 @@
+{
+  "tournament": {
+    "id": 2,
+    "name": "BFDGHJN",
+    "sport": "basketball",
+    "year": "2025-2026",
+    "format": "league",
+    "status": "active",
+    "created_at": "2026-10-01 22:35:52"
+  },
+  "teams": [],
+  "players": [],
+  "matches": [],
+  "standings": [],
+  "leaders": {
+    "scorers": [],
+    "three_pointers": [],
+    "assists": [],
+    "rebounds": [],
+    "mvps": []
+  },
+  "fair_play": [],
+  "fair_play_rules": {
+    "tournament_id": 2,
+    "yellow_card_points": 1.0,
+    "red_card_points": 3.0,
+    "suspension_points": 2.0,
+    "foul_points": 0.5
+  },
+  "awards": []
+}

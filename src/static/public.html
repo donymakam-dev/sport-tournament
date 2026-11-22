@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tournois Sportifs — Direct & Classements</title>
+  <link rel="stylesheet" href="/css/public.css">
+  <script src="/vendor/chart.umd.min.js"></script>
+  <script src="/js/i18n.js"></script>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="public-header">
+    <div class="public-header-inner">
+      <div>
+        <div class="school-tag" data-i18n="school_name">Institut Universitaire Saint Jérôme</div>
+        <h1 class="public-title" id="pTournamentTitle" data-i18n="public_title">Tournoi Sportif</h1>
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <select id="pSelectTournament" aria-label="Choisir le tournoi" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-dark); padding: 0.4rem 0.75rem; border-radius: 8px; font-weight: 700; outline: none;">
+          <!-- Populated dynamically -->
+        </select>
+        <button class="nav-action-btn" id="btnThemeToggle" onclick="toggleTheme()" title="Thème">🌙</button>
+        <button class="nav-action-btn" id="btnLangToggle" onclick="toggleLanguage()" title="Langue">🇬🇧 EN</button>
+        <button class="share-action-btn" id="btnShareLink" data-i18n="btn_share">
+          🔗 Partager
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="public-nav" aria-label="Navigation des spectateurs">
+    <div class="public-nav-container">
+      <button class="p-tab-btn active" data-tab="tab-p-standings" data-i18n="tab_standings">🏆 Classement</button>
+      <button class="p-tab-btn" data-tab="tab-p-matches" data-i18n="tab_matches">📅 Matchs & Scores</button>
+      <button class="p-tab-btn" data-tab="tab-p-stats" data-i18n="tab_stats">🎯 Meilleurs Joueurs</button>
+      <button class="p-tab-btn" data-tab="tab-p-fairplay" data-i18n="tab_fairplay">🤝 Fair-Play</button>
+      <button class="p-tab-btn" data-tab="tab-p-h2h" data-i18n="tab_h2h">⚔️ Face-à-Face</button>
+      <button class="p-tab-btn" data-tab="tab-p-predictions" data-i18n="tab_predictions">🎲 Pronostics</button>
+      <button class="p-tab-btn" data-tab="tab-p-awards" data-i18n="tab_awards">🌟 Joueur Semaine</button>
+      <button class="p-tab-btn" data-tab="tab-p-highlights" data-i18n="tab_highlights">⚡ Belles Actions</button>
+      <button class="p-tab-btn" data-tab="tab-p-teams" data-i18n="tab_teams">👥 Équipes & Joueurs</button>
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="public-container">
+
+    <!-- TAB 1: CLASSEMENT -->
+    <section id="tab-p-standings" class="p-pane active">
+      <div class="standings-card">
+        <div class="table-header-title">
+          <span data-i18n="tab_standings">Classement Général</span>
+          <span id="pSportBadge" style="font-size: 0.8rem; background: rgba(245, 158, 11, 0.2); color: var(--accent); padding: 0.2rem 0.6rem; border-radius: 9999px;">
+            Discipline
+          </span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="p-table">
+            <thead id="pTableHeadStandings"></thead>
+            <tbody id="pTableBodyStandings"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: MATCHS & SCORES -->
+    <section id="tab-p-matches" class="p-pane">
+      <div class="p-matches-list" id="pMatchesList"></div>
+    </section>
+
+    <!-- TAB 3: STATS & BUTEURS -->
+    <section id="tab-p-stats" class="p-pane">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+        <div class="standings-card">
+          <div class="table-header-title">🎯 Top Marqueurs / Buteurs</div>
+          <table class="p-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th class="th-left">Joueur</th>
+                <th>Équipe</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="pTableScorers"></tbody>
+          </table>
+        </div>
+
+        <div class="standings-card">
+          <div class="table-header-title">⭐ Hommes du Match (MVP)</div>
+          <table class="p-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">#</th>
+                <th class="th-left">Joueur</th>
+                <th>Trophées</th>
+              </tr>
+            </thead>
+            <tbody id="pTableMvps"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: FAIR-PLAY (F3.3) -->
+    <section id="tab-p-fairplay" class="p-pane">
+      <div class="standings-card">
+        <div class="table-header-title">
+          <span data-i18n="fp_title">🤝 Classement du Fair-Play</span>
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="p-table">
+            <thead id="pTableHeadFairPlay"></thead>
+            <tbody id="pTableBodyFairPlay"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: FACE-A-FACE (F3.2) -->
+    <section id="tab-p-h2h" class="p-pane">
+      <div class="standings-card">
+        <div class="table-header-title">⚔️ Comparateur Face-à-Face</div>
+        <div style="padding: 1rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <select id="pH2hTeam1" style="background: rgba(255,255,255,0.08); color: #fff; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-dark);"></select>
+          <span style="font-weight: 900; color: var(--accent);">VS</span>
+          <select id="pH2hTeam2" style="background: rgba(255,255,255,0.08); color: #fff; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-dark);"></select>
+          <button class="nav-action-btn" onclick="loadPublicH2H()">Comparer</button>
+        </div>
+        <div id="pH2hResults" style="padding: 1rem; display: none;"></div>
+      </div>
+    </section>
+
+    <!-- TAB 6: PRONOSTICS (F4.1) -->
+    <section id="tab-p-predictions" class="p-pane">
+      <div class="standings-card" style="margin-bottom: 1.25rem;">
+        <div class="table-header-title">
+          <span>🎯 Classement des Pronostiqueurs (Élèves & Écoles)</span>
+          <button class="nav-action-btn" onclick="openPublicPredictionModal()">✍️ Faire un Pronostic</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; padding: 1rem;">
+          <div>
+            <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--accent); margin-bottom: 0.5rem;">🏆 Top Élèves</h3>
+            <table class="p-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Élève</th>
+                  <th>Établissement</th>
+                  <th>Pts</th>
+                </tr>
+              </thead>
+              <tbody id="pTablePredStudents"></tbody>
+            </table>
+          </div>
+          <div>
+            <h3 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-blue); margin-bottom: 0.5rem;">🏫 Top Écoles</h3>
+            <table class="p-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Établissement</th>
+                  <th>Moyenne</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="pTablePredSchools"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 7: JOUEUR DE LA SEMAINE -->
+    <section id="tab-p-awards" class="p-pane">
+      <div id="pAwardsContainer" class="p-awards-list"></div>
+    </section>
+
+    <!-- TAB 8: BELLES ACTIONS & VIDEOS -->
+    <section id="tab-p-highlights" class="p-pane">
+      <div class="p-highlights-header">
+        <div>
+          <h2 style="font-size: 1.15rem; font-weight: 800;">⚡ Belles Actions & Vidéos du Tournoi</h2>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Dunks fracassants, buts d'anthologie, clutch shots et gestes techniques.
+          </div>
+        </div>
+      </div>
+      <div class="p-highlights-grid" id="pHighlightsGrid"></div>
+    </section>
+
+    <!-- TAB 9: ROSTERS & PROFILS JOUEURS -->
+    <section id="tab-p-teams" class="p-pane">
+      <div style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h2 style="font-size: 1.15rem; font-weight: 800; color: #fff;">👥 Effectifs & Fiches des Joueurs</h2>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Consultez les caractéristiques physiques, postes, dossards et photos officielles de chaque joueur.
+          </div>
+        </div>
+        <div>
+          <input type="text" id="pSearchPlayerInput" placeholder="🔍 Rechercher un joueur..." oninput="filterPublicPlayers()" style="background: var(--primary-card); border: 1px solid var(--border-dark); color: #fff; padding: 0.45rem 0.8rem; border-radius: 8px; font-size: 0.85rem; width: 220px;">
+        </div>
+      </div>
+      <div id="pTeamsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;"></div>
+    </section>
+
+  </main>
+
+  <!-- Modal Fan MVP Vote (F4.2) -->
+  <div id="modalFanVote" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999; display: none; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: var(--primary-card); border: 1px solid var(--border-dark); border-radius: 14px; max-width: 480px; width: 100%; padding: 1.5rem; color: #fff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--accent);" id="modalVoteMatchTitle">⭐ Vote Homme du Match (Public)</h3>
+        <button onclick="closeFanVoteModal()" style="background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Vote ouvert pendant 24h après la rencontre. 1 vote par visiteur.
+      </p>
+      <div id="modalVotePlayersList" style="max-height: 250px; overflow-y: auto; margin-bottom: 1rem;"></div>
+      <div id="modalVoteResults" style="display: none; margin-bottom: 1rem;"></div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="nav-action-btn" onclick="closeFanVoteModal()">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Fiche Joueur Détaillée -->
+  <div id="modalPlayerProfile" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+    <div style="background: #111827; border: 1px solid #374151; border-radius: 16px; max-width: 440px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7); color: #fff; position: relative;">
+      <button onclick="closePlayerProfileModal()" style="position: absolute; top: 12px; right: 14px; background: rgba(0,0,0,0.5); border: none; color: #fff; font-size: 1.6rem; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;">&times;</button>
+      
+      <!-- Card Header with Team Color -->
+      <div id="mProfileTeamBanner" style="height: 90px; background: linear-gradient(135deg, #1e3a8a, #3b82f6); position: relative;"></div>
+
+      <div style="padding: 0 1.5rem 1.5rem 1.5rem; margin-top: -50px; position: relative;">
+        <!-- Avatar & Jersey Number -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem;">
+          <div id="mProfileAvatarWrapper" style="width: 90px; height: 90px; border-radius: 50%; border: 4px solid #111827; overflow: hidden; background: #1f2937; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+            <img id="mProfileAvatar" src="" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <div style="text-align: right;">
+            <div id="mProfileNumber" style="font-size: 2.8rem; font-weight: 900; line-height: 1; color: #f59e0b; text-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);">#--</div>
+            <div id="mProfileTeamName" style="font-size: 0.8rem; color: #9ca3af; font-weight: 600;">Équipe</div>
+          </div>
+        </div>
+
+        <!-- Name & Position -->
+        <h2 id="mProfileName" style="font-size: 1.4rem; font-weight: 900; margin-bottom: 0.2rem; color: #fff;">Nom Joueur</h2>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+          <span id="mProfilePosition" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">Poste</span>
+          <span id="mProfileFiliere" style="color: #9ca3af; font-size: 0.8rem;">Filière</span>
+        </div>
+
+        <!-- Physical Metrics Grid -->
+        <div style="background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+          <div>
+            <div style="font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Âge</div>
+            <div id="mProfileAge" style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">-</div>
+          </div>
+          <div style="border-left: 1px solid #374151; border-right: 1px solid #374151;">
+            <div style="font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Taille</div>
+            <div id="mProfileHeight" style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">-</div>
+          </div>
+          <div>
+            <div style="font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; font-weight: 700;">Poids</div>
+            <div id="mProfileWeight" style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-top: 0.2rem;">-</div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end;">
+          <button onclick="closePlayerProfileModal()" class="nav-action-btn" style="width: 100%; text-align: center; justify-content: center;">Fermer la fiche</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/public.js"></script>
+</body>
+</html>
