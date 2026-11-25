@@ -766,77 +766,77 @@ async function loadPublicHistory(sport = null) {
       const sportLabel = sportIcons[h.sport] || h.sport.toUpperCase();
 
       const imageHtml = h.image_url ? `
-        <div style="height: 200px; width: 100%; position: relative; overflow: hidden; background: #111827;">
-          <img src="${h.image_url}" alt="Sacre ${h.champion_team}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentElement.style.display='none'">
-          <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(17,24,39,0.9) 0%, rgba(17,24,39,0.2) 60%, transparent 100%);"></div>
-          <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); color: #f59e0b; padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; border: 1px solid rgba(245, 158, 11, 0.4);">
-            🏆 Édition ${h.year}
+        <div class="history-img-wrapper">
+          <img src="${h.image_url}" alt="Sacre ${h.champion_team}" loading="lazy" onerror="this.parentElement.style.display='none'">
+          <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%, transparent 100%); pointer-events: none;"></div>
+          <div class="history-badge-year">
+            🏆 ${h.year}
           </div>
         </div>
       ` : `
-        <div style="padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #1e3a8a, #0284c7); display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 1.15rem; font-weight: 900; color: #fff;">🏆 Édition ${h.year}</span>
-          <span style="background: rgba(255,255,255,0.2); color: #fff; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">${sportLabel}</span>
+        <div style="padding: 1.25rem; background: linear-gradient(135deg, #1e3a8a, #0284c7); display: flex; justify-content: space-between; align-items: center; color: #fff;">
+          <span style="font-size: 1.15rem; font-weight: 900;">🏆 Édition ${h.year}</span>
+          <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">${sportLabel}</span>
         </div>
       `;
 
       return `
-        <div style="background: #111827; border: 1px solid #374151; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+        <div class="history-public-card">
           ${imageHtml}
-          <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+          <div class="history-card-body">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-              <span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800;">
+              <span class="badge-chip" style="background: var(--accent-gold-bg); color: var(--accent); border: 1px solid rgba(245, 158, 11, 0.35);">
                 ${sportLabel}
               </span>
-              <span style="font-size: 0.85rem; font-weight: 700; color: #9ca3af;">${h.year}</span>
+              <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">${h.year}</span>
             </div>
 
-            <h3 style="font-size: 1.25rem; font-weight: 900; color: #fff; margin-bottom: 1rem; line-height: 1.3;">
+            <h3 style="font-size: 1.25rem; font-weight: 900; color: var(--text-main); margin-bottom: 0.85rem; line-height: 1.3;">
               ${h.tournament_title}
             </h3>
 
-            <!-- Champion Card Section -->
-            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.05)); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
-              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <!-- Champion Box -->
+            <div class="history-champion-box">
+              <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem;">
                 <span style="font-size: 1.2rem;">👑</span>
-                <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #f59e0b; letter-spacing: 0.5px;">ÉQUIPE CHAMPIONNE</span>
+                <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #b45309; letter-spacing: 0.5px;">ÉQUIPE CHAMPIONNE</span>
               </div>
-              <div style="font-size: 1.3rem; font-weight: 900; color: #fff; margin-left: 0.2rem;">
+              <div style="font-size: 1.25rem; font-weight: 900; color: var(--text-main);">
                 ${h.champion_team}
               </div>
               ${h.final_score || h.runner_up_team ? `
-                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(245, 158, 11, 0.2); font-size: 0.85rem; color: #e5e7eb; display: flex; align-items: center; justify-content: space-between;">
-                  <span>Score finale : <strong style="color: #f59e0b; font-size: 0.95rem;">${h.final_score || 'Victoire'}</strong></span>
-                  ${h.runner_up_team ? `<span style="color: #9ca3af;">vs ${h.runner_up_team}</span>` : ''}
+                <div style="margin-top: 0.45rem; padding-top: 0.45rem; border-top: 1px solid rgba(245, 158, 11, 0.25); font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.3rem;">
+                  <span>Score finale : <strong style="color: var(--accent); font-size: 0.95rem;">${h.final_score || 'Victoire'}</strong></span>
+                  ${h.runner_up_team ? `<span>vs ${h.runner_up_team}</span>` : ''}
                 </div>
               ` : ''}
             </div>
 
-            <!-- Stats / Distinction -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem;">
+            <!-- Stats Box -->
+            <div class="history-stats-grid">
               ${h.top_scorer_name ? `
-                <div style="background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 0.65rem 0.85rem;">
-                  <div style="font-size: 0.7rem; color: #9ca3af; font-weight: 700; text-transform: uppercase;">👟 Meilleur Buteur</div>
-                  <div style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.top_scorer_name}">
+                <div class="history-stat-card">
+                  <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">👟 Meilleur Buteur</div>
+                  <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.top_scorer_name}">
                     ${h.top_scorer_name}
                   </div>
-                  ${h.top_scorer_stat ? `<div style="font-size: 0.8rem; color: #60a5fa; font-weight: 700;">${h.top_scorer_stat}</div>` : ''}
+                  ${h.top_scorer_stat ? `<div style="font-size: 0.8rem; color: var(--primary); font-weight: 700;">${h.top_scorer_stat}</div>` : ''}
                 </div>
               ` : ''}
               ${h.mvp_name ? `
-                <div style="background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 0.65rem 0.85rem;">
-                  <div style="font-size: 0.7rem; color: #9ca3af; font-weight: 700; text-transform: uppercase;">⭐ MVP / Joueur Clé</div>
-                  <div style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.mvp_name}">
+                <div class="history-stat-card">
+                  <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">⭐ MVP / Joueur Clé</div>
+                  <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.mvp_name}">
                     ${h.mvp_name}
                   </div>
-                  <div style="font-size: 0.8rem; color: #34d399; font-weight: 700;">Meilleur Joueur</div>
+                  <div style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">Meilleur Joueur</div>
                 </div>
               ` : ''}
             </div>
 
             ${h.summary ? `
-              <div style="background: rgba(31, 41, 55, 0.4); border-radius: 10px; padding: 0.85rem 1rem; border-left: 3px solid #f59e0b; margin-top: auto;">
-                <p style="font-size: 0.85rem; color: #d1d5db; line-height: 1.5; margin: 0; font-style: italic;">
+              <div class="history-summary-box">
+                <p style="font-size: 0.85rem; color: var(--text-main); line-height: 1.5; margin: 0; font-style: italic;">
                   « ${h.summary} »
                 </p>
               </div>
@@ -852,13 +852,11 @@ async function loadPublicHistory(sport = null) {
 }
 
 function filterPublicHistory(sport, btn) {
-  document.querySelectorAll("#publicHistorySportFilters .nav-action-btn").forEach(b => {
-    b.style.background = "rgba(255,255,255,0.1)";
-    b.style.color = "#fff";
+  document.querySelectorAll("#publicHistorySportFilters .history-filter-btn").forEach(b => {
+    b.classList.remove("active");
   });
   if (btn) {
-    btn.style.background = "var(--primary, #2563eb)";
-    btn.style.color = "#fff";
+    btn.classList.add("active");
   }
   loadPublicHistory(sport);
 }

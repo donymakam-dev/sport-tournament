@@ -1879,7 +1879,7 @@ async function renderAdminHistory() {
       const sportIcons = { football: "⚽ Football", basketball: "🏀 Basketball", handball: "🤾 Handball", volleyball: "🏐 Volleyball" };
       const sportLabel = sportIcons[h.sport] || h.sport.toUpperCase();
       const imageHtml = h.image_url ? `
-        <div style="height: 180px; overflow: hidden; position: relative; background: #0f172a;">
+        <div style="width: 100%; aspect-ratio: 16 / 9; max-height: 220px; overflow: hidden; position: relative; background: #0f172a;">
           <img src="${h.image_url}" alt="Sacre ${h.champion_team}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.style.display='none'">
           <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); color: #fff; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
             ${h.year}

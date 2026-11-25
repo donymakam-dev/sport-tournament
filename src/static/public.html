@@ -220,29 +220,29 @@
 
     <!-- TAB 10: PALMARES & HISTORIQUE OFFICIEL -->
     <section id="tab-p-history" class="p-pane">
-      <div style="background: var(--primary-card); border: 1px solid var(--border-dark); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-dark); padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
+      <div class="history-archive-box">
+        <div class="history-archive-header">
           <div>
-            <span class="school-tag" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);">
+            <span class="school-tag" style="background: rgba(245, 158, 11, 0.15); color: var(--accent); padding: 0.25rem 0.65rem; border-radius: 9999px; display: inline-flex; width: fit-content;">
               🏛️ Panthéon & Archives Saint Jérôme
             </span>
-            <h2 style="font-size: 1.45rem; font-weight: 900; color: #fff; margin-top: 0.4rem;">
+            <h2 class="history-archive-title">
               Palmarès Officiel des Éditions
             </h2>
-            <div style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem;">
+            <div class="history-archive-subtitle">
               Revivez l'épopée des tournois précédents : champions sacrés, finalistes, scores des finales, meilleurs buteurs et moments forts en images.
             </div>
           </div>
-          <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;" id="publicHistorySportFilters">
-            <button class="nav-action-btn active-filter" data-sport="all" onclick="filterPublicHistory('all', this)">🏆 Tous</button>
-            <button class="nav-action-btn" data-sport="football" onclick="filterPublicHistory('football', this)">⚽ Football</button>
-            <button class="nav-action-btn" data-sport="basketball" onclick="filterPublicHistory('basketball', this)">🏀 Basketball</button>
-            <button class="nav-action-btn" data-sport="handball" onclick="filterPublicHistory('handball', this)">🤾 Handball</button>
-            <button class="nav-action-btn" data-sport="volleyball" onclick="filterPublicHistory('volleyball', this)">🏐 Volleyball</button>
+          <div class="history-sport-filters" id="publicHistorySportFilters">
+            <button class="history-filter-btn active" data-sport="all" onclick="filterPublicHistory('all', this)">🏆 Tous</button>
+            <button class="history-filter-btn" data-sport="football" onclick="filterPublicHistory('football', this)">⚽ Football</button>
+            <button class="history-filter-btn" data-sport="basketball" onclick="filterPublicHistory('basketball', this)">🏀 Basketball</button>
+            <button class="history-filter-btn" data-sport="handball" onclick="filterPublicHistory('handball', this)">🤾 Handball</button>
+            <button class="history-filter-btn" data-sport="volleyball" onclick="filterPublicHistory('volleyball', this)">🏐 Volleyball</button>
           </div>
         </div>
 
-        <div id="pHistoryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+        <div id="pHistoryGrid" class="history-cards-grid">
           <!-- Dynamically populated -->
         </div>
       </div>

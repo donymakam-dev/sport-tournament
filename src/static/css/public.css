@@ -69,6 +69,12 @@
   --chip-bg: rgba(255, 255, 255, 0.08);
 }
 
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  width: 100%;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -851,9 +857,261 @@ body {
   transition: width 0.3s ease;
 }
 
-@media (max-width: 640px) {
+/* ==========================================================================
+   Palmarès & Hall of Fame Archive Styles
+   ========================================================================== */
+.history-archive-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-card);
+  width: 100%;
+}
+
+.history-archive-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.history-archive-title {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--text-main);
+  margin-top: 0.35rem;
+}
+
+.history-archive-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.history-sport-filters {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.history-filter-btn {
+  background: var(--bg-surface-alt);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.history-filter-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.history-filter-btn.active {
+  background: var(--primary);
+  color: #ffffff !important;
+  border-color: var(--primary);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25);
+}
+
+.history-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.history-public-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  width: 100%;
+}
+
+.history-public-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.history-img-wrapper {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 240px;
+  min-height: 180px;
+  position: relative;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.history-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.history-img-wrapper:hover img {
+  transform: scale(1.05);
+}
+
+.history-badge-year {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  color: var(--accent);
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.history-card-body {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-champion-box {
+  background: var(--accent-gold-bg);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.history-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.history-stat-card {
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+}
+
+.history-summary-box {
+  background: var(--bg-surface-alt);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--accent);
+  margin-top: auto;
+}
+
+/* ==========================================================================
+   Mobile Responsive Rules (Smartphones & Small Tablets)
+   ========================================================================== */
+@media (max-width: 768px) {
+  html, body {
+    width: 100vw;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+  .public-header {
+    padding: 0.75rem 0.85rem;
+    width: 100%;
+  }
+  .public-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .public-header-inner > div:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    width: 100%;
+  }
+  #pSelectTournament {
+    width: 100%;
+    margin-bottom: 0.25rem;
+  }
   .public-title {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
+  }
+  .public-container {
+    padding: 0 0.65rem;
+    margin: 0.75rem auto;
+    width: 100%;
+  }
+  .history-archive-box {
+    padding: 1rem 0.75rem;
+    border-radius: 12px;
+  }
+  .history-archive-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  .history-sport-filters {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .history-sport-filters::-webkit-scrollbar {
+    display: none;
+  }
+  .history-filter-btn {
+    white-space: nowrap;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  .history-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+    width: 100%;
+  }
+  .history-public-card {
+    width: 100%;
+    border-radius: 14px;
+  }
+  .history-img-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 220px;
+    min-height: 160px;
+  }
+  .history-card-body {
+    padding: 1rem;
+  }
+  .history-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
   }
   .p-match-duel {
     flex-direction: column;
@@ -869,5 +1127,10 @@ body {
   .award-hero {
     flex-direction: column;
     text-align: center;
+  }
+  .p-highlight-card img, .p-highlight-card video {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
   }
 }
