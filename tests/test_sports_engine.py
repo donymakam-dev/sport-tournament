@@ -219,6 +219,77 @@ class TestDatabaseLayer(unittest.TestCase):
         self.assertTrue(self.db.delete_tournament_history(h_id))
         self.assertIsNone(self.db.get_tournament_history(h_id))
 
+    def test_player_match_stats_and_rating(self):
+        """Test recording individual player match stats and rating formula calculation."""
+        t_id = self.db.create_tournament("Basket Cup SJD", "basketball", "2026-2027")
+        team1 = self.db.create_team(t_id, "Warriors SJD", "WAR", "#1e40af", "Informatique")
+        team2 = self.db.create_team(t_id, "Lakers SJD", "LAK", "#7c3aed", "Mécatronique")
+
+        p1 = self.db.create_player(team1, "Stephen Curry Jr", 30, "Meneur")
+        p2 = self.db.create_player(team2, "LeBron James Jr", 23, "Ailier Fort")
+
+        m_id = self.db.create_match(t_id, team1, team2, "Finale")
+
+        # Save stats
+        stats_payload = [
+            {
+                "player_id": p1,
+                "team_id": team1,
+                "points": 25,
+                "assists": 8,
+                "rebounds": 4,
+                "blocks": 1,
+                "fouls": 2,
+                "technical_fouls": 0,
+                "coach_appreciation": 2.0,
+                "rating": 9.5,
+                "rating_manual": 0,
+                "is_mvp": 1
+            },
+            {
+                "player_id": p2,
+                "team_id": team2,
+                "points": 18,
+                "assists": 5,
+                "rebounds": 10,
+                "blocks": 2,
+                "fouls": 4,
+                "technical_fouls": 1,
+                "coach_appreciation": 0.0,
+                "rating": 7.0,
+                "rating_manual": 1,
+                "is_mvp": 0
+            }
+        ]
+
+        self.db.save_match_player_stats(m_id, stats_payload)
+
+        # Retrieve match stats
+        saved_stats = self.db.get_match_player_stats(m_id)
+        self.assertEqual(len(saved_stats), 2)
+        
+        curry_stat = next(s for s in saved_stats if s["player_id"] == p1)
+        self.assertEqual(curry_stat["points"], 25)
+        self.assertEqual(curry_stat["assists"], 8)
+        self.assertEqual(curry_stat["rebounds"], 4)
+        self.assertEqual(curry_stat["blocks"], 1)
+        self.assertEqual(curry_stat["is_mvp"], 1)
+        self.assertEqual(curry_stat["rating"], 9.5)
+
+        lebron_stat = next(s for s in saved_stats if s["player_id"] == p2)
+        self.assertEqual(lebron_stat["points"], 18)
+        self.assertEqual(lebron_stat["rebounds"], 10)
+        self.assertEqual(lebron_stat["technical_fouls"], 1)
+        self.assertEqual(lebron_stat["rating_manual"], 1)
+
+        # Tournament summary
+        summary = self.db.get_tournament_player_stats_summary(t_id)
+        self.assertEqual(len(summary), 2)
+        top_scorer = summary[0]
+        self.assertEqual(top_scorer["player_id"], p1)
+        self.assertEqual(top_scorer["total_points"], 25)
+        self.assertEqual(top_scorer["mvp_count"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

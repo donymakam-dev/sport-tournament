@@ -815,35 +815,70 @@
     </div>
   </div>
 
-  <!-- Modal Score -->
+  <!-- Modal Score & Player Stats -->
   <div class="modal-overlay" id="modalScore">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 980px; width: 96%; max-height: 92vh; display: flex; flex-direction: column;">
       <div class="modal-header">
-        <h3 class="modal-title">Saisir le Score Officiel</h3>
+        <h3 class="modal-title">Saisir le Score & Statistiques Détaillées</h3>
         <button class="modal-close" onclick="closeModal('modalScore')">&times;</button>
       </div>
-      <form id="formScore">
+      <form id="formScore" style="overflow-y: auto; padding-right: 0.25rem;">
         <input type="hidden" id="scoreMatchId">
-        <div style="display: flex; justify-content: space-around; align-items: center; margin: 1.5rem 0;">
-          <div style="text-align: center;">
-            <div id="scoreModalHomeName" style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">Domicile</div>
-            <input type="number" id="scoreHome" class="form-control" style="font-size: 1.8rem; width: 90px; text-align: center;" min="0" required>
+        
+        <!-- Score Board Header -->
+        <div style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="text-align: center; flex: 1; min-width: 120px;">
+              <div id="scoreModalHomeName" style="font-weight: 800; font-size: 1.15rem; margin-bottom: 0.5rem; color: var(--primary);">Domicile</div>
+              <input type="number" id="scoreHome" class="form-control" style="font-size: 1.8rem; width: 100px; text-align: center; margin: 0 auto; font-weight: 900;" min="0" required>
+            </div>
+            <div style="font-size: 1.8rem; font-weight: 900; color: var(--text-muted);">-</div>
+            <div style="text-align: center; flex: 1; min-width: 120px;">
+              <div id="scoreModalAwayName" style="font-weight: 800; font-size: 1.15rem; margin-bottom: 0.5rem; color: var(--primary);">Extérieur</div>
+              <input type="number" id="scoreAway" class="form-control" style="font-size: 1.8rem; width: 100px; text-align: center; margin: 0 auto; font-weight: 900;" min="0" required>
+            </div>
           </div>
-          <div style="font-size: 1.5rem; font-weight: 900; color: var(--text-muted);">-</div>
-          <div style="text-align: center;">
-            <div id="scoreModalAwayName" style="font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">Extérieur</div>
-            <input type="number" id="scoreAway" class="form-control" style="font-size: 1.8rem; width: 90px; text-align: center;" min="0" required>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span>⭐ <strong>MVP Officiel :</strong></span>
+              <select id="scoreMvpSelect" class="form-control" style="display: inline-block; width: auto; font-weight: 700;">
+                <option value="">-- Aucun MVP désigné --</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="syncScoreFromPlayerPoints()" title="Calcule automatiquement le score global depuis la somme des points de chaque joueur">
+              🔄 Calculer score depuis les joueurs
+            </button>
           </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">⭐ Élection de l'Homme du Match (MVP) :</label>
-          <select id="scoreMvpSelect" class="form-control">
-            <option value="">-- Aucun MVP désigné --</option>
-          </select>
+
+        <!-- Rating Formula Notice -->
+        <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-main);">
+          <div style="font-weight: 800; color: var(--primary); margin-bottom: 0.2rem;">
+            🎯 Système d'Évaluation & Formule de Note (/10) :
+          </div>
+          <div style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.4;">
+            Note automatique = <strong>5.0</strong> (Base) + <strong>0.25</strong> × Pts + <strong>0.4</strong> × Passes + <strong>0.3</strong> × Rebonds + <strong>0.5</strong> × Contres - <strong>0.3</strong> × Fautes - <strong>1.0</strong> × Tech + Appréciation.<br>
+            <em>👉 Vous pouvez à tout moment <strong>taper manuellement la note de votre choix</strong> ou <strong>désigner le MVP</strong> en cliquant sur l'étoile.</em>
+          </div>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+
+        <!-- Team Switcher Tabs -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <button type="button" id="btnStatsTabHome" class="btn btn-primary btn-sm" onclick="switchModalStatsTeam('home')">
+            <span id="tabStatsHomeTitle">Équipe Domicile</span>
+          </button>
+          <button type="button" id="btnStatsTabAway" class="btn btn-secondary btn-sm" onclick="switchModalStatsTeam('away')">
+            <span id="tabStatsAwayTitle">Équipe Extérieur</span>
+          </button>
+        </div>
+
+        <!-- Player Stats Tables -->
+        <div id="statsHomeContainer" style="overflow-x: auto; margin-bottom: 1rem;"></div>
+        <div id="statsAwayContainer" style="overflow-x: auto; margin-bottom: 1rem; display: none;"></div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
           <button type="button" class="btn btn-secondary" onclick="closeModal('modalScore')">Annuler</button>
-          <button type="submit" class="btn btn-primary">Enregistrer le Score</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveMatchScore">💾 Enregistrer le Score & les Stats</button>
         </div>
       </form>
     </div>

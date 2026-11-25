@@ -210,6 +210,18 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
             })
             return
 
+        elif path.startswith("/api/tournament/") and path.endswith("/player-stats-summary"):
+            t_id = int(path.split("/")[3])
+            summary = db.get_tournament_player_stats_summary(t_id)
+            self._send_json(summary)
+            return
+
+        elif path.startswith("/api/matches/") and path.endswith("/player-stats"):
+            m_id = int(path.split("/")[3])
+            stats = db.get_match_player_stats(m_id)
+            self._send_json({"stats": stats})
+            return
+
         elif path.startswith("/api/tournament/") and path.endswith("/full"):
             t_id = int(path.split("/")[3])
             t = db.get_tournament(t_id)
@@ -567,6 +579,13 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
             self._send_json({"status": "ok", "id": h_id})
             return
 
+        elif path.startswith("/api/matches/") and path.endswith("/player-stats"):
+            m_id = int(path.split("/")[3])
+            stats = data.get("stats", [])
+            db.save_match_player_stats(m_id, stats)
+            self._send_json({"status": "ok"})
+            return
+
         elif path == "/api/teams":
             team_id = db.create_team(
                 tournament_id=int(data.get("tournament_id")),
@@ -830,15 +849,18 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
 
         if path.startswith("/api/matches/") and path.endswith("/score"):
             m_id = int(path.split("/")[3])
+            mvp_id = int(data.get("mvp_player_id")) if data.get("mvp_player_id") else None
             db.update_match_score(
                 match_id=m_id,
                 score_home=int(data.get("score_home", 0)),
                 score_away=int(data.get("score_away", 0)),
                 sets_detail=data.get("sets_detail", ""),
                 status=data.get("status", "finished"),
-                mvp_player_id=int(data.get("mvp_player_id")) if data.get("mvp_player_id") else None,
+                mvp_player_id=mvp_id,
                 author_role=data.get("author_role", "admin")
             )
+            if "player_stats" in data and isinstance(data["player_stats"], list):
+                db.save_match_player_stats(m_id, data["player_stats"])
             self._send_json({"status": "ok"})
             return
 

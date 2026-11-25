@@ -258,6 +258,29 @@ class Database:
                 image_url TEXT DEFAULT '',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            -- Statistiques individuelles et évaluation des joueurs par match
+            CREATE TABLE IF NOT EXISTS player_match_stats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                match_id INTEGER NOT NULL,
+                player_id INTEGER NOT NULL,
+                team_id INTEGER NOT NULL,
+                points INTEGER DEFAULT 0,
+                assists INTEGER DEFAULT 0,
+                rebounds INTEGER DEFAULT 0,
+                blocks INTEGER DEFAULT 0,
+                fouls INTEGER DEFAULT 0,
+                technical_fouls INTEGER DEFAULT 0,
+                coach_appreciation REAL DEFAULT 0.0,
+                rating REAL DEFAULT 5.0,
+                rating_manual INTEGER DEFAULT 0,
+                is_mvp INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE,
+                FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
+                FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+                UNIQUE(match_id, player_id)
+            );
             """)
             conn.commit()
 
@@ -658,6 +681,98 @@ class Database:
             self.evaluate_match_predictions(match_id, score_home, score_away)
 
         return True
+
+    # ---------------- STATISTIQUES & NOTES DES JOUEURS (MATCH STATS) ----------------
+    def save_match_player_stats(self, match_id: int, stats_list: List[Dict[str, Any]]) -> bool:
+        """
+        Enregistre ou met à jour les statistiques détaillées (points, passes, rebonds, contres, fautes,
+        appréciation et note sur 10) de chaque joueur pour un match donné.
+        """
+        if not stats_list:
+            return True
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            for s in stats_list:
+                player_id = int(s["player_id"])
+                team_id = int(s.get("team_id", 0))
+                if not team_id:
+                    # Trouver le team_id à partir de players
+                    p_row = conn.execute("SELECT team_id FROM players WHERE id = ?", (player_id,)).fetchone()
+                    team_id = p_row["team_id"] if p_row else 0
+
+                points = int(s.get("points", 0))
+                assists = int(s.get("assists", 0))
+                rebounds = int(s.get("rebounds", 0))
+                blocks = int(s.get("blocks", 0))
+                fouls = int(s.get("fouls", 0))
+                tech_fouls = int(s.get("technical_fouls", 0))
+                coach_app = float(s.get("coach_appreciation", 0.0))
+                rating = float(s.get("rating", 5.0))
+                rating_manual = 1 if s.get("rating_manual") else 0
+                is_mvp = 1 if s.get("is_mvp") else 0
+
+                cursor.execute("""
+                    INSERT INTO player_match_stats (
+                        match_id, player_id, team_id, points, assists, rebounds, blocks,
+                        fouls, technical_fouls, coach_appreciation, rating, rating_manual, is_mvp
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(match_id, player_id) DO UPDATE SET
+                        points = excluded.points,
+                        assists = excluded.assists,
+                        rebounds = excluded.rebounds,
+                        blocks = excluded.blocks,
+                        fouls = excluded.fouls,
+                        technical_fouls = excluded.technical_fouls,
+                        coach_appreciation = excluded.coach_appreciation,
+                        rating = excluded.rating,
+                        rating_manual = excluded.rating_manual,
+                        is_mvp = excluded.is_mvp
+                """, (match_id, player_id, team_id, points, assists, rebounds, blocks,
+                      fouls, tech_fouls, coach_app, rating, rating_manual, is_mvp))
+            conn.commit()
+        return True
+
+    def get_match_player_stats(self, match_id: int) -> List[Dict[str, Any]]:
+        with self.get_connection() as conn:
+            rows = conn.execute("""
+                SELECT pms.*,
+                       p.name as player_name, p.number as player_number, p.position as player_position, p.photo_url as player_photo,
+                       t.name as team_name, t.short_name as team_short, t.color as team_color, t.logo_url as team_logo
+                FROM player_match_stats pms
+                JOIN players p ON pms.player_id = p.id
+                JOIN teams t ON pms.team_id = t.id
+                WHERE pms.match_id = ?
+                ORDER BY t.id, pms.points DESC, pms.rating DESC
+            """, (match_id,)).fetchall()
+            return [dict(r) for r in rows]
+
+    def get_tournament_player_stats_summary(self, tournament_id: int) -> List[Dict[str, Any]]:
+        with self.get_connection() as conn:
+            rows = conn.execute("""
+                SELECT p.id as player_id, p.name as player_name, p.number as player_number,
+                       p.position as player_position, p.photo_url as player_photo,
+                       t.id as team_id, t.name as team_name, t.color as team_color, t.logo_url as team_logo,
+                       COUNT(pms.id) as matches_played,
+                       COALESCE(SUM(pms.points), 0) as total_points,
+                       COALESCE(ROUND(AVG(pms.points), 1), 0.0) as ppg,
+                       COALESCE(SUM(pms.assists), 0) as total_assists,
+                       COALESCE(ROUND(AVG(pms.assists), 1), 0.0) as apg,
+                       COALESCE(SUM(pms.rebounds), 0) as total_rebounds,
+                       COALESCE(ROUND(AVG(pms.rebounds), 1), 0.0) as rpg,
+                       COALESCE(SUM(pms.blocks), 0) as total_blocks,
+                       COALESCE(SUM(pms.fouls), 0) as total_fouls,
+                       COALESCE(ROUND(AVG(pms.rating), 1), 5.0) as avg_rating,
+                       COALESCE(SUM(pms.is_mvp), 0) as mvp_count,
+                       COALESCE(SUM(pms.is_mvp), 0) as mvp_titles_count
+                FROM players p
+                JOIN teams t ON p.team_id = t.id
+                LEFT JOIN player_match_stats pms ON pms.player_id = p.id
+                WHERE t.tournament_id = ?
+                GROUP BY p.id
+                HAVING matches_played > 0 OR total_points > 0
+                ORDER BY avg_rating DESC, total_points DESC
+            """, (tournament_id,)).fetchall()
+            return [dict(r) for r in rows]
 
     def delete_match(self, match_id: int) -> bool:
         old = self.get_match(match_id)

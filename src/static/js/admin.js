@@ -377,6 +377,15 @@ function setupEventListeners() {
     const score_away = parseInt(document.getElementById("scoreAway").value);
     const mvp_player_id = document.getElementById("scoreMvpSelect").value ? parseInt(document.getElementById("scoreMvpSelect").value) : null;
 
+    // Collect all player stats rows
+    const player_stats = collectModalPlayerStats();
+
+    const saveBtn = document.getElementById("btnSaveMatchScore");
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Enregistrement...";
+    }
+
     try {
       const res = await fetch(`/api/matches/${match_id}/score`, {
         method: "PUT",
@@ -386,17 +395,23 @@ function setupEventListeners() {
           score_away,
           status: "finished",
           mvp_player_id,
-          author_role: "admin"
+          author_role: "admin",
+          player_stats
         })
       });
       const data = await res.json();
       if (data.status === "ok") {
         closeModal("modalScore");
         await loadTournamentFull();
-        showToast("Score officiel enregistré avec succès !");
+        showToast("Score officiel et statistiques des joueurs enregistrés avec succès !");
       }
     } catch (err) {
-      showToast("Erreur lors de l'enregistrement du score", "error");
+      showToast("Erreur lors de l'enregistrement du score et des stats", "error");
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "💾 Enregistrer le Score & les Stats";
+      }
     }
   });
 
@@ -828,15 +843,32 @@ function renderMatches() {
   });
 }
 
-function openScoreModal(matchId) {
+async function openScoreModal(matchId) {
   const m = (currentTournamentData.matches || []).find(item => item.id === matchId);
   if (!m) return;
 
   document.getElementById("scoreMatchId").value = m.id;
   document.getElementById("scoreModalHomeName").textContent = m.team_home_name;
   document.getElementById("scoreModalAwayName").textContent = m.team_away_name;
+  document.getElementById("tabStatsHomeTitle").textContent = `🏠 ${m.team_home_name}`;
+  document.getElementById("tabStatsAwayTitle").textContent = `✈️ ${m.team_away_name}`;
   document.getElementById("scoreHome").value = m.score_home !== null ? m.score_home : 0;
   document.getElementById("scoreAway").value = m.score_away !== null ? m.score_away : 0;
+
+  // Default to Home tab
+  switchModalStatsTeam("home");
+
+  // Fetch existing stats for this match if any
+  let existingStats = [];
+  try {
+    const res = await fetch(`/api/matches/${matchId}/player-stats`);
+    if (res.ok) {
+      const data = await res.json();
+      existingStats = data.stats || [];
+    }
+  } catch (err) {
+    console.warn("Could not load player stats:", err);
+  }
 
   // Populate MVP select with players from both teams
   const mvpSelect = document.getElementById("scoreMvpSelect");
@@ -852,7 +884,278 @@ function openScoreModal(matchId) {
     mvpSelect.appendChild(opt);
   });
 
+  mvpSelect.onchange = () => {
+    const selId = parseInt(mvpSelect.value);
+    document.querySelectorAll(".btn-mvp-toggle").forEach(b => {
+      const rowId = parseInt(b.getAttribute("data-player-id"));
+      b.textContent = (rowId === selId) ? "⭐" : "☆";
+    });
+  };
+
+  // Render stats tables for both teams
+  renderModalTeamPlayerStats(m.team_home_id, "statsHomeContainer", existingStats, true, m.mvp_player_id);
+  renderModalTeamPlayerStats(m.team_away_id, "statsAwayContainer", existingStats, false, m.mvp_player_id);
+
   openModal("modalScore");
+}
+
+function switchModalStatsTeam(team) {
+  const homeContainer = document.getElementById("statsHomeContainer");
+  const awayContainer = document.getElementById("statsAwayContainer");
+  const btnHome = document.getElementById("btnStatsTabHome");
+  const btnAway = document.getElementById("btnStatsTabAway");
+
+  if (team === "home") {
+    homeContainer.style.display = "block";
+    awayContainer.style.display = "none";
+    btnHome.className = "btn btn-primary btn-sm";
+    btnAway.className = "btn btn-secondary btn-sm";
+  } else {
+    homeContainer.style.display = "none";
+    awayContainer.style.display = "block";
+    btnHome.className = "btn btn-secondary btn-sm";
+    btnAway.className = "btn btn-primary btn-sm";
+  }
+}
+
+function renderModalTeamPlayerStats(teamId, containerId, existingStats, isHome, currentMvpId) {
+  const container = document.getElementById(containerId);
+  const players = (currentTournamentData.players || []).filter(p => p.team_id === teamId);
+
+  if (players.length === 0) {
+    container.innerHTML = `<div style="padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Aucun joueur enregistré dans cette équipe. Ajoutez des joueurs dans l'onglet Équipes.</div>`;
+    return;
+  }
+
+  let html = `
+    <table class="table-stats-entry" style="width: 100%; border-collapse: collapse; font-size: 0.82rem; min-width: 650px;">
+      <thead>
+        <tr style="background: var(--bg-surface-alt, rgba(0,0,0,0.05)); border-bottom: 2px solid var(--border); text-align: center; font-size: 0.75rem; text-transform: uppercase;">
+          <th style="padding: 0.5rem; text-align: left;">Joueur</th>
+          <th style="padding: 0.5rem; width: 55px;" title="Points marqués">PTS</th>
+          <th style="padding: 0.5rem; width: 55px;" title="Passes décisives">AST</th>
+          <th style="padding: 0.5rem; width: 55px;" title="Rebonds">REB</th>
+          <th style="padding: 0.5rem; width: 55px;" title="Contres / Blocks">BLK</th>
+          <th style="padding: 0.5rem; width: 55px;" title="Fautes personnelles">FLS</th>
+          <th style="padding: 0.5rem; width: 55px;" title="Fautes techniques">TEC</th>
+          <th style="padding: 0.5rem; width: 130px;" title="Appréciation globale du coach / organisateur">Appréciation</th>
+          <th style="padding: 0.5rem; width: 90px;" title="Note sur 10 calculée ou manuelle">Note /10</th>
+          <th style="padding: 0.5rem; width: 45px;" title="Homme du match (MVP)">MVP</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  players.forEach(p => {
+    const s = existingStats.find(item => item.player_id === p.id) || {};
+    const pts = s.points !== undefined ? s.points : 0;
+    const ast = s.assists !== undefined ? s.assists : 0;
+    const reb = s.rebounds !== undefined ? s.rebounds : 0;
+    const blk = s.blocks !== undefined ? s.blocks : 0;
+    const fls = s.fouls !== undefined ? s.fouls : 0;
+    const tec = s.technical_fouls !== undefined ? s.technical_fouls : 0;
+    const appr = s.coach_appreciation !== undefined ? s.coach_appreciation : 0.0;
+    const ratingManual = s.rating_manual ? 1 : 0;
+    const rating = s.rating !== undefined ? Number(s.rating).toFixed(1) : "5.0";
+    const isMvp = (currentMvpId === p.id) || (s.is_mvp === 1);
+
+    const avatar = p.photo_url 
+      ? `<img src="${p.photo_url}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; vertical-align: middle; margin-right: 6px;">`
+      : `<span style="display: inline-block; width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 0.7rem; font-weight: 800; line-height: 24px; text-align: center; margin-right: 6px;">${p.number || '•'}</span>`;
+
+    html += `
+      <tr class="player-stat-row" data-player-id="${p.id}" data-team-id="${p.team_id}" style="border-bottom: 1px solid var(--border);">
+        <td style="padding: 0.4rem 0.5rem; text-align: left; font-weight: 600;">
+          <div style="display: flex; align-items: center;">
+            ${avatar}
+            <div>
+              <div style="font-size: 0.85rem; color: var(--text-main); font-weight: 700;">${p.name}</div>
+              <small style="color: var(--text-muted); font-size: 0.7rem;">#${p.number || '-'} • ${p.position || 'Joueur'}</small>
+            </div>
+          </div>
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <input type="number" min="0" max="150" class="form-control stat-pts" value="${pts}" style="width: 50px; text-align: center; padding: 2px 4px; font-weight: 700;">
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <input type="number" min="0" max="50" class="form-control stat-ast" value="${ast}" style="width: 50px; text-align: center; padding: 2px 4px;">
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <input type="number" min="0" max="50" class="form-control stat-reb" value="${reb}" style="width: 50px; text-align: center; padding: 2px 4px;">
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <input type="number" min="0" max="30" class="form-control stat-blk" value="${blk}" style="width: 50px; text-align: center; padding: 2px 4px;">
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <input type="number" min="0" max="10" class="form-control stat-fls" value="${fls}" style="width: 50px; text-align: center; padding: 2px 4px;">
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <input type="number" min="0" max="10" class="form-control stat-tec" value="${tec}" style="width: 50px; text-align: center; padding: 2px 4px;">
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <select class="form-control stat-appr" style="width: 125px; padding: 2px 4px; font-size: 0.72rem;">
+            <option value="2.0" ${appr === 2.0 ? 'selected' : ''}>⭐⭐ Exceptionnel (+2)</option>
+            <option value="1.0" ${appr === 1.0 ? 'selected' : ''}>⭐ Très bon (+1)</option>
+            <option value="0.0" ${appr === 0.0 ? 'selected' : ''}>⚪ Neutre (0)</option>
+            <option value="-1.0" ${appr === -1.0 ? 'selected' : ''}>⚠️ Décevant (-1)</option>
+            <option value="-2.0" ${appr === -2.0 ? 'selected' : ''}>❌ Mauvais (-2)</option>
+          </select>
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <div style="display: inline-flex; align-items: center; gap: 3px;">
+            <input type="number" step="0.1" min="0" max="10" class="form-control stat-rating" value="${rating}" data-manual="${ratingManual ? 'true' : 'false'}" style="width: 55px; text-align: center; padding: 2px 3px; font-weight: 800; color: ${ratingManual ? '#d97706' : 'var(--primary)'}; ${ratingManual ? 'border-color: #d97706; background: rgba(217, 119, 6, 0.08);' : ''}" title="${ratingManual ? 'Note saisie manuellement par l\'organisateur' : 'Note calculée selon la formule'}">
+            <button type="button" class="btn btn-secondary btn-sm btn-recalc-rating" title="Recalculer selon la formule automatique" style="padding: 2px 4px; font-size: 0.7rem; line-height: 1;">↺</button>
+          </div>
+        </td>
+        <td style="padding: 0.3rem; text-align: center;">
+          <button type="button" class="btn btn-sm btn-mvp-toggle" data-player-id="${p.id}" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; padding: 0; line-height: 1;" title="Désigner comme MVP officiel">
+            ${isMvp ? '⭐' : '☆'}
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+
+  // Attach event listeners to this container's rows
+  container.querySelectorAll(".player-stat-row").forEach(row => {
+    const ptsInput = row.querySelector(".stat-pts");
+    const astInput = row.querySelector(".stat-ast");
+    const rebInput = row.querySelector(".stat-reb");
+    const blkInput = row.querySelector(".stat-blk");
+    const flsInput = row.querySelector(".stat-fls");
+    const tecInput = row.querySelector(".stat-tec");
+    const apprSelect = row.querySelector(".stat-appr");
+    const ratingInput = row.querySelector(".stat-rating");
+    const recalcBtn = row.querySelector(".btn-recalc-rating");
+    const mvpBtn = row.querySelector(".btn-mvp-toggle");
+
+    const recomputeIfAuto = () => {
+      if (ratingInput.getAttribute("data-manual") !== "true") {
+        calculatePlayerRating(row);
+      }
+    };
+
+    [ptsInput, astInput, rebInput, blkInput, flsInput, tecInput].forEach(inp => {
+      inp.addEventListener("input", recomputeIfAuto);
+    });
+    apprSelect.addEventListener("change", recomputeIfAuto);
+
+    // Manual override of rating
+    ratingInput.addEventListener("input", () => {
+      ratingInput.setAttribute("data-manual", "true");
+      ratingInput.style.borderColor = "#d97706";
+      ratingInput.style.color = "#d97706";
+      ratingInput.style.background = "rgba(217, 119, 6, 0.08)";
+      ratingInput.title = "Note saisie manuellement par l'organisateur (protégée de la formule)";
+    });
+
+    // Reset to auto formula
+    recalcBtn.addEventListener("click", () => {
+      ratingInput.setAttribute("data-manual", "false");
+      ratingInput.style.borderColor = "";
+      ratingInput.style.color = "var(--primary)";
+      ratingInput.style.background = "";
+      ratingInput.title = "Note calculée selon la formule";
+      calculatePlayerRating(row);
+    });
+
+    // MVP Star Toggle
+    mvpBtn.addEventListener("click", () => {
+      const pId = parseInt(row.getAttribute("data-player-id"));
+      const isAlreadyMvp = mvpBtn.textContent.trim() === "⭐";
+      
+      // Clear MVP from all rows across both containers
+      document.querySelectorAll(".btn-mvp-toggle").forEach(b => {
+        b.textContent = "☆";
+      });
+
+      const mvpSelect = document.getElementById("scoreMvpSelect");
+
+      if (isAlreadyMvp) {
+        // Deselect
+        mvpSelect.value = "";
+      } else {
+        // Select this player
+        mvpBtn.textContent = "⭐";
+        mvpSelect.value = pId;
+      }
+    });
+  });
+}
+
+function calculatePlayerRating(row) {
+  const pts = parseFloat(row.querySelector(".stat-pts").value) || 0;
+  const ast = parseFloat(row.querySelector(".stat-ast").value) || 0;
+  const reb = parseFloat(row.querySelector(".stat-reb").value) || 0;
+  const blk = parseFloat(row.querySelector(".stat-blk").value) || 0;
+  const fls = parseFloat(row.querySelector(".stat-fls").value) || 0;
+  const tec = parseFloat(row.querySelector(".stat-tec").value) || 0;
+  const appr = parseFloat(row.querySelector(".stat-appr").value) || 0.0;
+
+  // Rating Formula: Base 5.0 + 0.25*PTS + 0.4*AST + 0.3*REB + 0.5*BLK - 0.3*FLS - 1.0*TEC + APPR
+  let raw = 5.0 + (0.25 * pts) + (0.40 * ast) + (0.30 * reb) + (0.50 * blk) - (0.30 * fls) - (1.00 * tec) + appr;
+  let finalRating = Math.max(0.0, Math.min(10.0, Math.round(raw * 10) / 10));
+
+  const ratingInput = row.querySelector(".stat-rating");
+  ratingInput.value = finalRating.toFixed(1);
+}
+
+function syncScoreFromPlayerPoints() {
+  let homeTotal = 0;
+  let awayTotal = 0;
+
+  document.querySelectorAll("#statsHomeContainer .stat-pts").forEach(inp => {
+    homeTotal += parseInt(inp.value) || 0;
+  });
+
+  document.querySelectorAll("#statsAwayContainer .stat-pts").forEach(inp => {
+    awayTotal += parseInt(inp.value) || 0;
+  });
+
+  document.getElementById("scoreHome").value = homeTotal;
+  document.getElementById("scoreAway").value = awayTotal;
+
+  showToast(`Scores synchronisés : ${homeTotal} - ${awayTotal} !`);
+}
+
+function collectModalPlayerStats() {
+  const stats = [];
+  const selectedMvpId = document.getElementById("scoreMvpSelect").value ? parseInt(document.getElementById("scoreMvpSelect").value) : null;
+
+  document.querySelectorAll(".player-stat-row").forEach(row => {
+    const player_id = parseInt(row.getAttribute("data-player-id"));
+    const team_id = parseInt(row.getAttribute("data-team-id"));
+    const points = parseInt(row.querySelector(".stat-pts").value) || 0;
+    const assists = parseInt(row.querySelector(".stat-ast").value) || 0;
+    const rebounds = parseInt(row.querySelector(".stat-reb").value) || 0;
+    const blocks = parseInt(row.querySelector(".stat-blk").value) || 0;
+    const fouls = parseInt(row.querySelector(".stat-fls").value) || 0;
+    const technical_fouls = parseInt(row.querySelector(".stat-tec").value) || 0;
+    const coach_appreciation = parseFloat(row.querySelector(".stat-appr").value) || 0.0;
+    const rating = parseFloat(row.querySelector(".stat-rating").value) || 5.0;
+    const rating_manual = row.querySelector(".stat-rating").getAttribute("data-manual") === "true" ? 1 : 0;
+    const is_mvp = (selectedMvpId === player_id) ? 1 : 0;
+
+    stats.push({
+      player_id,
+      team_id,
+      points,
+      assists,
+      rebounds,
+      blocks,
+      fouls,
+      technical_fouls,
+      coach_appreciation,
+      rating,
+      rating_manual,
+      is_mvp
+    });
+  });
+
+  return stats;
 }
 
 async function deleteMatch(matchId) {

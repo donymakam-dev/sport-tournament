@@ -265,10 +265,15 @@ async function renderPublicMatches() {
       ` : ''}
 
       <!-- Fan Actions Bar -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; border-top: 1px solid var(--border-dark); padding-top: 0.5rem; font-size: 0.8rem;">
-        <button class="nav-action-btn" onclick="openFanVoteModal(${m.id}, '${m.team_home_name}', '${m.team_away_name}')" style="font-size: 0.75rem;">
-          ⭐ Voter MVP du Public
-        </button>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; border-top: 1px solid var(--border-dark); padding-top: 0.5rem; font-size: 0.8rem;">
+        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+          <button class="nav-action-btn" onclick="openPublicMatchStatsModal(${m.id}, '${(m.team_home_name || '').replace(/'/g, "\\'")}', '${(m.team_away_name || '').replace(/'/g, "\\'")}', ${m.team_home_id}, ${m.team_away_id})" style="font-size: 0.75rem;">
+            📊 Stats & Notes Joueurs
+          </button>
+          <button class="nav-action-btn" onclick="openFanVoteModal(${m.id}, '${(m.team_home_name || '').replace(/'/g, "\\'")}', '${(m.team_away_name || '').replace(/'/g, "\\'")}')" style="font-size: 0.75rem;">
+            ⭐ Voter MVP Public
+          </button>
+        </div>
         <a href="/match_sheet.html?id=${m.id}" target="_blank" style="color: var(--accent-blue); text-decoration: none; font-weight: 700;">
           📄 Feuille Officielle A4 ↗
         </a>
@@ -285,6 +290,138 @@ async function renderPublicMatches() {
     `;
     container.appendChild(card);
   });
+}
+
+// ---------------- MODAL STATS ET NOTES MATCH (SPECTATEURS) ----------------
+let currentStatsModalHomeTeamId = null;
+let currentStatsModalAwayTeamId = null;
+
+async function openPublicMatchStatsModal(matchId, homeName, awayName, homeId, awayId) {
+  currentStatsModalHomeTeamId = homeId;
+  currentStatsModalAwayTeamId = awayId;
+
+  const modal = document.getElementById("modalPublicMatchStats");
+  if (!modal) return;
+  modal.style.display = "flex";
+
+  document.getElementById("mStatsMatchTitle").textContent = `📊 Statistiques : ${homeName} vs ${awayName}`;
+  document.getElementById("pStatsTabHomeTitle").textContent = `🏠 ${homeName}`;
+  document.getElementById("pStatsTabAwayTitle").textContent = `✈️ ${awayName}`;
+
+  switchPublicStatsTeam("home");
+
+  const homeBox = document.getElementById("pStatsHomeContent");
+  const awayBox = document.getElementById("pStatsAwayContent");
+  homeBox.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chargement des statistiques...</div>`;
+  awayBox.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chargement des statistiques...</div>`;
+
+  try {
+    const res = await fetch(`/api/matches/${matchId}/player-stats`);
+    const data = await res.json();
+    const stats = data.stats || [];
+
+    renderPublicStatsTable("pStatsHomeContent", stats.filter(s => s.team_id === homeId), homeName);
+    renderPublicStatsTable("pStatsAwayContent", stats.filter(s => s.team_id === awayId), awayName);
+  } catch (err) {
+    homeBox.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Aucune statistique individuelle saisie pour ce match.</div>`;
+    awayBox.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Aucune statistique individuelle saisie pour ce match.</div>`;
+  }
+}
+
+function closePublicMatchStatsModal() {
+  const modal = document.getElementById("modalPublicMatchStats");
+  if (modal) modal.style.display = "none";
+}
+
+function switchPublicStatsTeam(team) {
+  const homeBox = document.getElementById("pStatsHomeContent");
+  const awayBox = document.getElementById("pStatsAwayContent");
+  const btnHome = document.getElementById("btnPStatsTabHome");
+  const btnAway = document.getElementById("btnPStatsTabAway");
+
+  if (team === "home") {
+    if (homeBox) homeBox.style.display = "block";
+    if (awayBox) awayBox.style.display = "none";
+    if (btnHome) { btnHome.style.borderColor = "var(--accent)"; btnHome.style.opacity = "1"; }
+    if (btnAway) { btnAway.style.borderColor = "transparent"; btnAway.style.opacity = "0.6"; }
+  } else {
+    if (homeBox) homeBox.style.display = "none";
+    if (awayBox) awayBox.style.display = "block";
+    if (btnAway) { btnAway.style.borderColor = "var(--accent)"; btnAway.style.opacity = "1"; }
+    if (btnHome) { btnHome.style.borderColor = "transparent"; btnHome.style.opacity = "0.6"; }
+  }
+}
+
+function renderPublicStatsTable(containerId, statsList, teamName) {
+  const box = document.getElementById(containerId);
+  if (!box) return;
+  if (!statsList || statsList.length === 0) {
+    box.innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">Aucune statistique détaillée disponible pour ${teamName}.</div>`;
+    return;
+  }
+
+  let html = `
+    <table class="p-table" style="width: 100%; font-size: 0.82rem; min-width: 580px;">
+      <thead>
+        <tr>
+          <th class="th-left">Joueur</th>
+          <th>PTS</th>
+          <th>AST</th>
+          <th>REB</th>
+          <th>BLK</th>
+          <th>FLS</th>
+          <th>TEC</th>
+          <th>Appréciation</th>
+          <th>Note /10</th>
+          <th>MVP</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  statsList.forEach(s => {
+    const r = Number(s.rating || 5.0).toFixed(1);
+    let ratingBadgeClass = "background: rgba(59, 130, 246, 0.2); color: #60a5fa;";
+    if (s.rating >= 8.0) ratingBadgeClass = "background: rgba(34, 197, 94, 0.25); color: #22c55e; font-weight: 900;";
+    else if (s.rating >= 6.5) ratingBadgeClass = "background: rgba(245, 158, 11, 0.25); color: #f59e0b; font-weight: 800;";
+    else if (s.rating < 5.0) ratingBadgeClass = "background: rgba(239, 68, 68, 0.25); color: #ef4444;";
+
+    let apprText = "⚪ Neutre";
+    if (s.coach_appreciation >= 2.0) apprText = "⭐⭐ Exceptionnel";
+    else if (s.coach_appreciation >= 1.0) apprText = "⭐ Très bon";
+    else if (s.coach_appreciation <= -2.0) apprText = "❌ Mauvais";
+    else if (s.coach_appreciation <= -1.0) apprText = "⚠️ Décevant";
+
+    html += `
+      <tr>
+        <td class="th-left" style="font-weight: 700;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            ${s.photo_url ? `<img src="${s.photo_url}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">` : `<span style="display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: #374151; text-align: center; line-height: 22px; font-size: 0.7rem;">#${s.number || '•'}</span>`}
+            <div>
+              <div>${s.player_name || 'Joueur'}</div>
+              <small style="color: var(--text-muted); font-size: 0.7rem;">#${s.number || '-'} • ${s.position || 'Poste'}</small>
+            </div>
+          </div>
+        </td>
+        <td style="font-weight: 900; color: var(--accent); font-size: 0.95rem;">${s.points}</td>
+        <td>${s.assists}</td>
+        <td>${s.rebounds}</td>
+        <td>${s.blocks}</td>
+        <td>${s.fouls}</td>
+        <td style="${s.technical_fouls > 0 ? 'color: #ef4444; font-weight: 800;' : ''}">${s.technical_fouls}</td>
+        <td style="font-size: 0.75rem; color: var(--text-muted);">${apprText}</td>
+        <td>
+          <span style="display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.85rem; ${ratingBadgeClass}">
+            ${r}
+          </span>
+        </td>
+        <td>${s.is_mvp ? '⭐' : '-'}</td>
+      </tr>
+    `;
+  });
+
+  html += `</tbody></table>`;
+  box.innerHTML = html;
 }
 
 // ---------------- F4.2: FAN MVP VOTE MODAL ----------------
@@ -395,35 +532,82 @@ function closeFanVoteModal() {
 }
 
 // ---------------- TAB 3: STATS & MVPS ----------------
-function renderPublicStats() {
+async function renderPublicStats() {
   const leaders = currentTournamentData.leaders || {};
-  const scorers = leaders.scorers || [];
-  const mvps = leaders.mvps || [];
+  let scorers = leaders.scorers || [];
+  let mvps = leaders.mvps || [];
+
+  // Check if we have rich individual stats summary from match scores
+  if (currentTournamentId) {
+    try {
+      const res = await fetch(`/api/tournament/${currentTournamentId}/player-stats-summary`);
+      if (res.ok) {
+        const summary = await res.json();
+        if (summary && summary.length > 0) {
+          const pointsLeaders = summary
+            .filter(s => s.total_points > 0)
+            .sort((a, b) => b.total_points - a.total_points)
+            .map((s, idx) => ({
+              rank: idx + 1,
+              player_name: s.player_name,
+              player_number: s.player_number,
+              team_name: s.team_name,
+              total: s.total_points
+            }));
+          if (pointsLeaders.length > 0) scorers = pointsLeaders;
+
+          const mvpLeaders = summary
+            .filter(s => s.mvp_count > 0)
+            .sort((a, b) => b.mvp_count - a.mvp_count)
+            .map((s, idx) => ({
+              rank: idx + 1,
+              player_name: s.player_name,
+              total: s.mvp_count
+            }));
+          if (mvpLeaders.length > 0) mvps = mvpLeaders;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch player stats summary:", e);
+    }
+  }
 
   const tbodyScorers = document.getElementById("pTableScorers");
-  tbodyScorers.innerHTML = "";
-  scorers.slice(0, 10).forEach(sc => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="font-weight: 800;">#${sc.rank}</td>
-      <td class="th-left"><strong>${sc.player_name}</strong> <small>(#${sc.player_number})</small></td>
-      <td>${sc.team_name}</td>
-      <td style="font-weight: 900; color: var(--accent);">${sc.total}</td>
-    `;
-    tbodyScorers.appendChild(tr);
-  });
+  if (tbodyScorers) {
+    tbodyScorers.innerHTML = "";
+    if (scorers.length === 0) {
+      tbodyScorers.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1rem;">Aucun point enregistré pour l'instant.</td></tr>`;
+    } else {
+      scorers.slice(0, 10).forEach(sc => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="font-weight: 800;">#${sc.rank}</td>
+          <td class="th-left"><strong>${sc.player_name}</strong> ${sc.player_number ? `<small>(#${sc.player_number})</small>` : ''}</td>
+          <td>${sc.team_name}</td>
+          <td style="font-weight: 900; color: var(--accent);">${sc.total}</td>
+        `;
+        tbodyScorers.appendChild(tr);
+      });
+    }
+  }
 
   const tbodyMvps = document.getElementById("pTableMvps");
-  tbodyMvps.innerHTML = "";
-  mvps.slice(0, 10).forEach(m => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td style="font-weight: 800;">#${m.rank}</td>
-      <td class="th-left"><strong>${m.player_name}</strong></td>
-      <td style="font-weight: 900; color: var(--accent);">⭐ ${m.total}</td>
-    `;
-    tbodyMvps.appendChild(tr);
-  });
+  if (tbodyMvps) {
+    tbodyMvps.innerHTML = "";
+    if (mvps.length === 0) {
+      tbodyMvps.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 1rem;">Aucun MVP désigné pour l'instant.</td></tr>`;
+    } else {
+      mvps.slice(0, 10).forEach(m => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="font-weight: 800;">#${m.rank}</td>
+          <td class="th-left"><strong>${m.player_name}</strong></td>
+          <td style="font-weight: 900; color: var(--accent);">⭐ ${m.total}</td>
+        `;
+        tbodyMvps.appendChild(tr);
+      });
+    }
+  }
 }
 
 // ---------------- TAB 4: FAIR-PLAY (F3.3) ----------------
