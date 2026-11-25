@@ -33,6 +33,7 @@ const I18N_DICTIONARY = {
     "tab_journalism": "📰 Journalisme",
     "tab_scheduler": "🗓️ Calendrier Optimisé",
     "tab_admin_tools": "⚙️ Sauvegardes & Audit",
+    "tab_history": "🏛️ Palmarès & Historique",
     "tab_share": "🔗 Partage & Liens",
 
     // Table Columns
@@ -119,6 +120,7 @@ const I18N_DICTIONARY = {
     "tab_journalism": "📰 News & Reports",
     "tab_scheduler": "🗓️ Calendar Optimizer",
     "tab_admin_tools": "⚙️ Backups & Audit",
+    "tab_history": "🏛️ Hall of Fame & History",
     "tab_share": "🔗 Share & Links",
 
     // Table Columns

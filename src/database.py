@@ -240,6 +240,24 @@ class Database:
                 salt TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+
+            -- Historique & Palmarès des Éditions (Hall of Fame)
+            CREATE TABLE IF NOT EXISTS tournament_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                year TEXT NOT NULL,
+                sport TEXT NOT NULL,
+                tournament_title TEXT NOT NULL,
+                champion_team TEXT NOT NULL,
+                champion_logo TEXT DEFAULT '',
+                runner_up_team TEXT DEFAULT '',
+                final_score TEXT DEFAULT '',
+                top_scorer_name TEXT DEFAULT '',
+                top_scorer_stat TEXT DEFAULT '',
+                mvp_name TEXT DEFAULT '',
+                summary TEXT DEFAULT '',
+                image_url TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
             """)
             conn.commit()
 
@@ -267,6 +285,33 @@ class Database:
                     conn.commit()
                 except Exception:
                     pass
+
+            # Initialiser des exemples d'historique de tournois si la table est vide
+            try:
+                cursor.execute("SELECT COUNT(*) AS cnt FROM tournament_history")
+                if cursor.fetchone()["cnt"] == 0:
+                    cursor.execute("""
+                        INSERT INTO tournament_history (
+                            year, sport, tournament_title, champion_team, champion_logo,
+                            runner_up_team, final_score, top_scorer_name, top_scorer_stat,
+                            mvp_name, summary, image_url
+                        ) VALUES 
+                        (
+                            '2024-2025', 'football', 'Super Cup Saint Jérôme 2024', 'Génie Informatique FC', '',
+                            'Génie Industriel', '3 - 1', 'Karl Ewandé', '9 buts',
+                            'Arthur Mbianda', 'Une finale mémorable devant plus de 800 étudiants. Le Génie Informatique a dominé la seconde période grâce à un doublé décisif.',
+                            'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&auto=format&fit=crop&q=60'
+                        ),
+                        (
+                            '2024-2025', 'basketball', 'Saint Jérôme Basket Trophy 2024', 'Bulls SJD', '',
+                            'Lakers Saint Jérôme', '78 - 72', 'Yannick Noah Jr.', '24.5 pts/m',
+                            'Cédric Kamga', 'Un derby électrique indécis jusqu au buzzer final avec un shoot primé à 3 points à 15 secondes de la fin.',
+                            'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&auto=format&fit=crop&q=60'
+                        )
+                    """)
+                    conn.commit()
+            except Exception:
+                pass
 
     # ---------------- AUTHENTIFICATION ADMIN ----------------
     def verify_admin(self, username: str, password: str) -> bool:
@@ -297,6 +342,103 @@ class Database:
             conn.commit()
         self.log_audit("admin", username, "change_password", "admin_user", None, "***", "***", "Mot de passe modifié")
         return True, "Mot de passe modifié avec succès."
+
+    # ---------------- HISTORIQUE & PALMARES DES EDITIONS ----------------
+    def list_tournament_history(self, sport: Optional[str] = None) -> List[Dict[str, Any]]:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if sport and sport.strip() != "" and sport.lower() != "all":
+                cursor.execute("""
+                    SELECT * FROM tournament_history
+                    WHERE LOWER(sport) = LOWER(?)
+                    ORDER BY year DESC, id DESC
+                """, (sport.strip(),))
+            else:
+                cursor.execute("""
+                    SELECT * FROM tournament_history
+                    ORDER BY year DESC, id DESC
+                """)
+            return [dict(row) for row in cursor.fetchall()]
+
+    def get_tournament_history(self, history_id: int) -> Optional[Dict[str, Any]]:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM tournament_history WHERE id = ?", (history_id,))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+
+    def create_tournament_history(self, data: Dict[str, Any]) -> int:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO tournament_history (
+                    year, sport, tournament_title, champion_team, champion_logo,
+                    runner_up_team, final_score, top_scorer_name, top_scorer_stat,
+                    mvp_name, summary, image_url
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                data.get("year", "2024-2025").strip(),
+                data.get("sport", "football").strip(),
+                data.get("tournament_title", "Édition Précédente").strip(),
+                data.get("champion_team", "").strip(),
+                data.get("champion_logo", "").strip(),
+                data.get("runner_up_team", "").strip(),
+                data.get("final_score", "").strip(),
+                data.get("top_scorer_name", "").strip(),
+                data.get("top_scorer_stat", "").strip(),
+                data.get("mvp_name", "").strip(),
+                data.get("summary", "").strip(),
+                data.get("image_url", "").strip(),
+            ))
+            h_id = cursor.lastrowid
+            conn.commit()
+        self.log_audit("admin", "Administrateur", "create_history", "history", h_id, "", data.get("tournament_title", ""))
+        return h_id
+
+    def update_tournament_history(self, history_id: int, data: Dict[str, Any]) -> bool:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE tournament_history SET
+                    year = ?,
+                    sport = ?,
+                    tournament_title = ?,
+                    champion_team = ?,
+                    champion_logo = ?,
+                    runner_up_team = ?,
+                    final_score = ?,
+                    top_scorer_name = ?,
+                    top_scorer_stat = ?,
+                    mvp_name = ?,
+                    summary = ?,
+                    image_url = ?
+                WHERE id = ?
+            """, (
+                data.get("year", "").strip(),
+                data.get("sport", "football").strip(),
+                data.get("tournament_title", "").strip(),
+                data.get("champion_team", "").strip(),
+                data.get("champion_logo", "").strip(),
+                data.get("runner_up_team", "").strip(),
+                data.get("final_score", "").strip(),
+                data.get("top_scorer_name", "").strip(),
+                data.get("top_scorer_stat", "").strip(),
+                data.get("mvp_name", "").strip(),
+                data.get("summary", "").strip(),
+                data.get("image_url", "").strip(),
+                history_id
+            ))
+            conn.commit()
+        self.log_audit("admin", "Administrateur", "update_history", "history", history_id, "", data.get("tournament_title", ""))
+        return True
+
+    def delete_tournament_history(self, history_id: int) -> bool:
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM tournament_history WHERE id = ?", (history_id,))
+            conn.commit()
+        self.log_audit("admin", "Administrateur", "delete_history", "history", history_id, "", "")
+        return True
 
     # ---------------- TOURNAMENTS ----------------
     def list_tournaments(self) -> List[Dict[str, Any]]:

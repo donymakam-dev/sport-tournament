@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (authed) {
     await loadTournaments();
     await loadAdminToolsData();
+    await renderAdminHistory();
   }
 });
 
@@ -143,6 +144,7 @@ function setupTabs() {
       if (tabId === "tab-predictions") loadPredictionsTab();
       if (tabId === "tab-journalism") loadJournalismTab();
       if (tabId === "tab-admin-tools") loadAdminToolsData();
+      if (tabId === "tab-history") renderAdminHistory();
     });
   });
 }
@@ -1818,4 +1820,287 @@ function showToast(message, type = "success") {
   toast.textContent = message;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), 4000);
+}
+
+// ---------------- SUPPRESSION DU TOURNOI COURANT ----------------
+async function confirmDeleteCurrentTournament() {
+  if (!currentTournamentId) {
+    showToast("Aucun tournoi sélectionné.", "error");
+    return;
+  }
+  const tName = currentTournamentData && currentTournamentData.tournament ? currentTournamentData.tournament.name : "ce tournoi";
+  const ok = confirm(`⚠️ ATTENTION :\nVoulez-vous vraiment supprimer définitivement le tournoi "${tName}" ?\n\nToutes les équipes, matchs, classements et données associés seront définitivement effacés.`);
+  if (!ok) return;
+
+  try {
+    const res = await fetch(`/api/tournaments/${currentTournamentId}`, {
+      method: "DELETE",
+      headers: { "X-Admin-Token": localStorage.getItem("admin_token") || "" }
+    });
+    if (res.ok) {
+      showToast(`Le tournoi "${tName}" a été supprimé avec succès.`);
+      await loadTournaments();
+    } else {
+      showToast("Erreur lors de la suppression du tournoi.", "error");
+    }
+  } catch (err) {
+    console.error("Delete tournament error:", err);
+    showToast("Erreur réseau lors de la suppression.", "error");
+  }
+}
+
+// ---------------- TAB 14: HISTORIQUE & PALMARES ----------------
+let currentHistoryList = [];
+
+async function renderAdminHistory() {
+  const grid = document.getElementById("adminHistoryGrid");
+  if (!grid) return;
+
+  const sportFilter = document.getElementById("filterHistorySport") ? document.getElementById("filterHistorySport").value : "all";
+  grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--text-muted);">Chargement du palmarès...</div>`;
+
+  try {
+    const res = await fetch(`/api/history?sport=${encodeURIComponent(sportFilter)}`);
+    if (!res.ok) throw new Error("Erreur de chargement");
+    currentHistoryList = await res.json();
+
+    if (!currentHistoryList || currentHistoryList.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: var(--bg-card); border-radius: 12px; border: 1px dashed var(--border);">
+          <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏛️</div>
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text);">Aucune édition dans le palmarès pour le moment</h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Cliquez sur « Ajouter une Édition au Palmarès » pour inscrire le premier sacre historique.</p>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = currentHistoryList.map(h => {
+      const sportIcons = { football: "⚽ Football", basketball: "🏀 Basketball", handball: "🤾 Handball", volleyball: "🏐 Volleyball" };
+      const sportLabel = sportIcons[h.sport] || h.sport.toUpperCase();
+      const imageHtml = h.image_url ? `
+        <div style="height: 180px; overflow: hidden; position: relative; background: #0f172a;">
+          <img src="${h.image_url}" alt="Sacre ${h.champion_team}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.parentElement.style.display='none'">
+          <div style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); color: #fff; padding: 0.25rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+            ${h.year}
+          </div>
+        </div>
+      ` : `
+        <div style="padding: 1rem 1.25rem; background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: #fff; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 800; font-size: 1.1rem;">🏆 ${h.year}</span>
+          <span style="font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 0.2rem 0.5rem; border-radius: 6px;">${sportLabel}</span>
+        </div>
+      `;
+
+      return `
+        <div class="card" style="padding: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; box-shadow: var(--shadow);">
+          ${imageHtml}
+          <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+              <span class="brand-badge" style="background: #fef3c7; color: #b45309; font-weight: 800; font-size: 0.75rem;">
+                ${sportLabel}
+              </span>
+              <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted);">${h.year}</span>
+            </div>
+
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text); margin-bottom: 0.75rem;">${h.tournament_title}</h3>
+
+            <!-- Champion Box -->
+            <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.75rem;">
+              <div style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #b45309; letter-spacing: 0.5px;">🏆 Champion Sacré</div>
+              <div style="font-size: 1.1rem; font-weight: 900; color: var(--text); margin-top: 0.15rem;">${h.champion_team}</div>
+              ${h.runner_up_team || h.final_score ? `
+                <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">
+                  Finale : <strong>${h.final_score || 'Vainqueur'}</strong> ${h.runner_up_team ? `face à ${h.runner_up_team}` : ''}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Stats Box -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+              ${h.top_scorer_name ? `
+                <div style="background: var(--bg-main); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">👟 Buteur/Marqueur</div>
+                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.top_scorer_name}">${h.top_scorer_name}</div>
+                  <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">${h.top_scorer_stat || ''}</div>
+                </div>
+              ` : ''}
+              ${h.mvp_name ? `
+                <div style="background: var(--bg-main); padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border);">
+                  <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">⭐ MVP du Tournoi</div>
+                  <div style="font-size: 0.85rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.mvp_name}">${h.mvp_name}</div>
+                  <div style="font-size: 0.75rem; color: #16a34a; font-weight: 600;">Meilleur Joueur</div>
+                </div>
+              ` : ''}
+            </div>
+
+            ${h.summary ? `
+              <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1rem; flex: 1;">
+                ${h.summary}
+              </p>
+            ` : '<div style="flex: 1;"></div>'}
+
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end; padding-top: 0.75rem; border-top: 1px solid var(--border);">
+              <button class="btn btn-secondary btn-sm" onclick="openHistoryModal(${h.id})">✏️ Modifier</button>
+              <button class="btn btn-sm" onclick="deleteHistoryItem(${h.id})" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); font-weight: 700; border-radius: 6px; padding: 0.35rem 0.65rem; cursor: pointer;">🗑️ Supprimer</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (err) {
+    console.error("renderAdminHistory error:", err);
+    grid.innerHTML = `<div style="grid-column: 1 / -1; color: #ef4444; padding: 1.5rem; text-align: center;">Erreur lors du chargement de l'historique.</div>`;
+  }
+}
+
+function openHistoryModal(id = null) {
+  const modal = document.getElementById("modalHistory");
+  const form = document.getElementById("formHistory");
+  const title = document.getElementById("modalHistoryTitle");
+  const preview = document.getElementById("historyImagePreview");
+  const previewImg = document.getElementById("historyImagePreviewImg");
+
+  form.reset();
+  document.getElementById("historyId").value = "";
+  preview.style.display = "none";
+  previewImg.src = "";
+
+  if (id) {
+    const item = currentHistoryList.find(x => x.id === id);
+    if (item) {
+      title.textContent = "✏️ Modifier l'Édition du Palmarès";
+      document.getElementById("historyId").value = item.id;
+      document.getElementById("historyYear").value = item.year || "";
+      document.getElementById("historySport").value = item.sport || "football";
+      document.getElementById("historyTitle").value = item.tournament_title || "";
+      document.getElementById("historyChampion").value = item.champion_team || "";
+      document.getElementById("historyRunnerUp").value = item.runner_up_team || "";
+      document.getElementById("historyFinalScore").value = item.final_score || "";
+      document.getElementById("historyTopScorer").value = item.top_scorer_name || "";
+      document.getElementById("historyTopScorerStat").value = item.top_scorer_stat || "";
+      document.getElementById("historyMvp").value = item.mvp_name || "";
+      document.getElementById("historyImageUrl").value = item.image_url || "";
+      document.getElementById("historySummary").value = item.summary || "";
+      if (item.image_url) {
+        previewImg.src = item.image_url;
+        preview.style.display = "block";
+      }
+    }
+  } else {
+    title.textContent = "🏛️ Ajouter une Édition au Palmarès";
+    document.getElementById("historyYear").value = currentTournamentData && currentTournamentData.tournament ? currentTournamentData.tournament.year : "2024-2025";
+    document.getElementById("historySport").value = currentTournamentData && currentTournamentData.tournament ? currentTournamentData.tournament.sport : "football";
+  }
+
+  document.getElementById("historyImageUrl").oninput = function() {
+    if (this.value.trim()) {
+      previewImg.src = this.value.trim();
+      preview.style.display = "block";
+    } else {
+      preview.style.display = "none";
+    }
+  };
+
+  openModal("modalHistory");
+}
+
+async function handleHistoryImageUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+
+  reader.onload = async (e) => {
+    try {
+      const res = await fetch("/api/upload-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, data: e.target.result })
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        document.getElementById("historyImageUrl").value = data.url;
+        document.getElementById("historyImagePreviewImg").src = data.url;
+        document.getElementById("historyImagePreview").style.display = "block";
+        showToast("Image téléchargée avec succès !");
+      } else {
+        showToast("Erreur lors de l'upload de l'image.", "error");
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      showToast("Erreur lors de l'envoi de l'image.", "error");
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function handleHistoryFormSubmit(e) {
+  e.preventDefault();
+  const id = document.getElementById("historyId").value;
+  const payload = {
+    year: document.getElementById("historyYear").value.trim(),
+    sport: document.getElementById("historySport").value,
+    tournament_title: document.getElementById("historyTitle").value.trim(),
+    champion_team: document.getElementById("historyChampion").value.trim(),
+    runner_up_team: document.getElementById("historyRunnerUp").value.trim(),
+    final_score: document.getElementById("historyFinalScore").value.trim(),
+    top_scorer_name: document.getElementById("historyTopScorer").value.trim(),
+    top_scorer_stat: document.getElementById("historyTopScorerStat").value.trim(),
+    mvp_name: document.getElementById("historyMvp").value.trim(),
+    image_url: document.getElementById("historyImageUrl").value.trim(),
+    summary: document.getElementById("historySummary").value.trim()
+  };
+
+  const btn = document.getElementById("btnSaveHistory");
+  btn.disabled = true;
+  btn.textContent = "Enregistrement...";
+
+  try {
+    const url = id ? `/api/history/${id}` : "/api/history";
+    const method = id ? "PUT" : "POST";
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Admin-Token": localStorage.getItem("admin_token") || ""
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      showToast(id ? "Édition mise à jour avec succès !" : "Nouvelle édition ajoutée au Palmarès !");
+      closeModal("modalHistory");
+      await renderAdminHistory();
+    } else {
+      showToast("Erreur lors de l'enregistrement de l'édition.", "error");
+    }
+  } catch (err) {
+    console.error("Save history error:", err);
+    showToast("Erreur réseau.", "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "💾 Enregistrer l'Édition";
+  }
+}
+
+async function deleteHistoryItem(id) {
+  const item = currentHistoryList.find(x => x.id === id);
+  const name = item ? `${item.tournament_title} (${item.year})` : "cette édition";
+  if (!confirm(`Supprimer définitivement "${name}" du palmarès ?`)) return;
+
+  try {
+    const res = await fetch(`/api/history/${id}`, {
+      method: "DELETE",
+      headers: { "X-Admin-Token": localStorage.getItem("admin_token") || "" }
+    });
+    if (res.ok) {
+      showToast("Édition supprimée du palmarès.");
+      await renderAdminHistory();
+    } else {
+      showToast("Erreur lors de la suppression.", "error");
+    }
+  } catch (err) {
+    console.error("Delete history error:", err);
+    showToast("Erreur réseau.", "error");
+  }
 }

@@ -37,6 +37,7 @@ function setupTabs() {
 
       if (tabId === "tab-p-predictions") loadPublicPredictions();
       if (tabId === "tab-p-h2h") preparePublicH2HSelectors();
+      if (tabId === "tab-p-history") loadPublicHistory();
     });
   });
 }
@@ -731,4 +732,133 @@ async function likeHighlight(hlId, btn) {
   } catch (e) {
     console.warn(e);
   }
+}
+
+// ---------------- TAB: PALMARES & HISTORIQUE ----------------
+let currentPublicHistorySport = "all";
+
+async function loadPublicHistory(sport = null) {
+  if (sport) currentPublicHistorySport = sport;
+  const grid = document.getElementById("pHistoryGrid");
+  if (!grid) return;
+
+  grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: #9ca3af;">Chargement des archives du Palmarès...</div>`;
+
+  try {
+    const url = `/api/history?sport=${encodeURIComponent(currentPublicHistorySport)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Erreur de chargement");
+    const list = await res.json();
+
+    if (!list || list.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3.5rem 1rem; background: rgba(31, 41, 55, 0.5); border-radius: 16px; border: 1px dashed var(--border-dark);">
+          <div style="font-size: 3rem; margin-bottom: 0.75rem;">🏛️</div>
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: #fff;">Aucun palmarès archivé pour cette sélection</h3>
+          <p style="color: #9ca3af; font-size: 0.9rem; margin-top: 0.35rem;">Les archives officielles des saisons précédentes apparaîtront ici.</p>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = list.map(h => {
+      const sportIcons = { football: "⚽ Football", basketball: "🏀 Basketball", handball: "🤾 Handball", volleyball: "🏐 Volleyball" };
+      const sportLabel = sportIcons[h.sport] || h.sport.toUpperCase();
+
+      const imageHtml = h.image_url ? `
+        <div style="height: 200px; width: 100%; position: relative; overflow: hidden; background: #111827;">
+          <img src="${h.image_url}" alt="Sacre ${h.champion_team}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.parentElement.style.display='none'">
+          <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(17,24,39,0.9) 0%, rgba(17,24,39,0.2) 60%, transparent 100%);"></div>
+          <div style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.75); backdrop-filter: blur(6px); color: #f59e0b; padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; border: 1px solid rgba(245, 158, 11, 0.4);">
+            🏆 Édition ${h.year}
+          </div>
+        </div>
+      ` : `
+        <div style="padding: 1.25rem 1.5rem; background: linear-gradient(135deg, #1e3a8a, #0284c7); display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 1.15rem; font-weight: 900; color: #fff;">🏆 Édition ${h.year}</span>
+          <span style="background: rgba(255,255,255,0.2); color: #fff; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">${sportLabel}</span>
+        </div>
+      `;
+
+      return `
+        <div style="background: #111827; border: 1px solid #374151; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+          ${imageHtml}
+          <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+              <span style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800;">
+                ${sportLabel}
+              </span>
+              <span style="font-size: 0.85rem; font-weight: 700; color: #9ca3af;">${h.year}</span>
+            </div>
+
+            <h3 style="font-size: 1.25rem; font-weight: 900; color: #fff; margin-bottom: 1rem; line-height: 1.3;">
+              ${h.tournament_title}
+            </h3>
+
+            <!-- Champion Card Section -->
+            <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(217, 119, 6, 0.05)); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 12px; padding: 1rem; margin-bottom: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <span style="font-size: 1.2rem;">👑</span>
+                <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: #f59e0b; letter-spacing: 0.5px;">ÉQUIPE CHAMPIONNE</span>
+              </div>
+              <div style="font-size: 1.3rem; font-weight: 900; color: #fff; margin-left: 0.2rem;">
+                ${h.champion_team}
+              </div>
+              ${h.final_score || h.runner_up_team ? `
+                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(245, 158, 11, 0.2); font-size: 0.85rem; color: #e5e7eb; display: flex; align-items: center; justify-content: space-between;">
+                  <span>Score finale : <strong style="color: #f59e0b; font-size: 0.95rem;">${h.final_score || 'Victoire'}</strong></span>
+                  ${h.runner_up_team ? `<span style="color: #9ca3af;">vs ${h.runner_up_team}</span>` : ''}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- Stats / Distinction -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem;">
+              ${h.top_scorer_name ? `
+                <div style="background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 0.65rem 0.85rem;">
+                  <div style="font-size: 0.7rem; color: #9ca3af; font-weight: 700; text-transform: uppercase;">👟 Meilleur Buteur</div>
+                  <div style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.top_scorer_name}">
+                    ${h.top_scorer_name}
+                  </div>
+                  ${h.top_scorer_stat ? `<div style="font-size: 0.8rem; color: #60a5fa; font-weight: 700;">${h.top_scorer_stat}</div>` : ''}
+                </div>
+              ` : ''}
+              ${h.mvp_name ? `
+                <div style="background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 0.65rem 0.85rem;">
+                  <div style="font-size: 0.7rem; color: #9ca3af; font-weight: 700; text-transform: uppercase;">⭐ MVP / Joueur Clé</div>
+                  <div style="font-size: 0.95rem; font-weight: 800; color: #fff; margin-top: 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${h.mvp_name}">
+                    ${h.mvp_name}
+                  </div>
+                  <div style="font-size: 0.8rem; color: #34d399; font-weight: 700;">Meilleur Joueur</div>
+                </div>
+              ` : ''}
+            </div>
+
+            ${h.summary ? `
+              <div style="background: rgba(31, 41, 55, 0.4); border-radius: 10px; padding: 0.85rem 1rem; border-left: 3px solid #f59e0b; margin-top: auto;">
+                <p style="font-size: 0.85rem; color: #d1d5db; line-height: 1.5; margin: 0; font-style: italic;">
+                  « ${h.summary} »
+                </p>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join("");
+  } catch (err) {
+    console.error("loadPublicHistory error:", err);
+    grid.innerHTML = `<div style="grid-column: 1 / -1; color: #ef4444; padding: 2rem; text-align: center;">Erreur de chargement des archives.</div>`;
+  }
+}
+
+function filterPublicHistory(sport, btn) {
+  document.querySelectorAll("#publicHistorySportFilters .nav-action-btn").forEach(b => {
+    b.style.background = "rgba(255,255,255,0.1)";
+    b.style.color = "#fff";
+  });
+  if (btn) {
+    btn.style.background = "var(--primary, #2563eb)";
+    btn.style.color = "#fff";
+  }
+  loadPublicHistory(sport);
 }

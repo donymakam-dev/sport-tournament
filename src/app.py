@@ -185,6 +185,21 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
             self._send_json(tournaments)
             return
 
+        elif path == "/api/history":
+            sport = query.get("sport", [None])[0]
+            items = db.list_tournament_history(sport)
+            self._send_json(items)
+            return
+
+        elif path.startswith("/api/history/"):
+            h_id = int(path.split("/")[3])
+            item = db.get_tournament_history(h_id)
+            if not item:
+                self._send_json({"error": "Historique introuvable"}, 404)
+            else:
+                self._send_json(item)
+            return
+
         elif path == "/api/network-info":
             ip = get_local_ip()
             self._send_json({
@@ -547,6 +562,11 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
             self._send_json({"status": "ok", "id": t_id})
             return
 
+        elif path == "/api/history":
+            h_id = db.create_tournament_history(data)
+            self._send_json({"status": "ok", "id": h_id})
+            return
+
         elif path == "/api/teams":
             team_id = db.create_team(
                 tournament_id=int(data.get("tournament_id")),
@@ -878,6 +898,12 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
             self._send_json({"status": "ok"})
             return
 
+        elif path.startswith("/api/history/"):
+            h_id = int(path.split("/")[3])
+            db.update_tournament_history(h_id, data)
+            self._send_json({"status": "ok"})
+            return
+
         self.send_error(404, "Endpoint not found")
 
     def do_DELETE(self):
@@ -929,6 +955,12 @@ class SportsAppRequestHandler(SimpleHTTPRequestHandler):
         elif path.startswith("/api/highlights/"):
             h_id = int(path.split("/")[3])
             db.delete_highlight(h_id)
+            self._send_json({"status": "ok"})
+            return
+
+        elif path.startswith("/api/history/"):
+            h_id = int(path.split("/")[3])
+            db.delete_tournament_history(h_id)
             self._send_json({"status": "ok"})
             return
 

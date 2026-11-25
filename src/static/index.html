@@ -54,6 +54,9 @@
         <button class="btn btn-primary btn-sm" onclick="openModal('modalTournament')" data-i18n="btn_new_tournament">
           ➕ Nouveau Tournoi
         </button>
+        <button class="btn btn-sm" id="btnDeleteCurrentTournament" onclick="confirmDeleteCurrentTournament()" title="Supprimer définitivement le tournoi actif" style="background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); font-weight: 700; border-radius: 8px; padding: 0.35rem 0.65rem; cursor: pointer;">
+          🗑️ Supprimer Tournoi
+        </button>
         <a id="btnOpenPublic" href="/public" target="_blank" class="btn btn-basket btn-sm" data-i18n="btn_public_portal">
           📱 Portail Spectateur (Public)
         </a>
@@ -93,6 +96,7 @@
       <button class="tab-btn" data-tab="tab-scheduler" data-i18n="tab_scheduler">🗓️ Calendrier Optimisé</button>
       <button class="tab-btn" data-tab="tab-admin-tools" data-i18n="tab_admin_tools">⚙️ Sauvegardes & Audit</button>
       <button class="tab-btn" data-tab="tab-highlights" data-i18n="tab_highlights">⚡ Belles Actions</button>
+      <button class="tab-btn" data-tab="tab-history">🏛️ Palmarès & Historique</button>
       <button class="tab-btn" data-tab="tab-share" data-i18n="tab_share">🔗 Liens & Exports</button>
     </div>
   </nav>
@@ -579,6 +583,36 @@
       </div>
     </section>
 
+    <!-- TAB 14: HISTORIQUE & PALMARES DES EDITIONS -->
+    <section id="tab-history" class="tab-pane">
+      <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h2 class="card-title">🏛️ Palmarès Officiel & Historique des Éditions</h2>
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 0.25rem;">
+              Enregistrez et mettez en avant les équipes championnes, les scores des finales, les meilleurs buteurs et les photos du sacre. Ces archives sont visibles en direct par les spectateurs sur le portail public.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <select id="filterHistorySport" onchange="renderAdminHistory()" class="form-control" style="width: auto; padding: 0.45rem 0.85rem; font-weight: 600;">
+              <option value="all">🏆 Toutes les disciplines</option>
+              <option value="football">⚽ Football</option>
+              <option value="basketball">🏀 Basketball</option>
+              <option value="handball">🤾 Handball</option>
+              <option value="volleyball">🏐 Volleyball</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openHistoryModal()">
+              ➕ Ajouter une Édition au Palmarès
+            </button>
+          </div>
+        </div>
+
+        <div id="adminHistoryGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+          <!-- Injecté dynamiquement par JS -->
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- ==================== MODALS ==================== -->
@@ -1051,6 +1085,96 @@
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
           <button type="button" class="btn btn-secondary" onclick="closeModal('modalHighlight')">Annuler</button>
           <button type="submit" class="btn btn-primary">⚡ Mettre en Ligne</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Palmarès & Historique -->
+  <div class="modal-overlay" id="modalHistory">
+    <div class="modal-box" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalHistoryTitle">🏛️ Ajouter une Édition au Palmarès</h3>
+        <button class="modal-close" onclick="closeModal('modalHistory')">&times;</button>
+      </div>
+      <form id="formHistory" onsubmit="handleHistoryFormSubmit(event)">
+        <input type="hidden" id="historyId" value="">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Saison / Année Universitaire *</label>
+            <input type="text" id="historyYear" class="form-control" placeholder="ex: 2024-2025" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Discipline Sportive *</label>
+            <select id="historySport" class="form-control" required>
+              <option value="football">⚽ Football</option>
+              <option value="basketball">🏀 Basketball</option>
+              <option value="handball">🤾 Handball</option>
+              <option value="volleyball">🏐 Volleyball</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Nom du Tournoi / Titre de l'Édition *</label>
+          <input type="text" id="historyTitle" class="form-control" placeholder="ex: Super Cup Saint Jérôme 2024" required>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">🏆 Équipe Championne (Vainqueur) *</label>
+            <input type="text" id="historyChampion" class="form-control" placeholder="ex: Génie Informatique FC" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">🥈 Équipe Finaliste (Vice-champion)</label>
+            <input type="text" id="historyRunnerUp" class="form-control" placeholder="ex: Génie Industriel">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Score de la Finale</label>
+            <input type="text" id="historyFinalScore" class="form-control" placeholder="ex: 3 - 1 ou 82 - 76">
+          </div>
+          <div class="form-group">
+            <label class="form-label">⭐ Joueur Clé / MVP du Tournoi</label>
+            <input type="text" id="historyMvp" class="form-control" placeholder="ex: Arthur Mbianda">
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">👟 Meilleur Buteur / Marqueur</label>
+            <input type="text" id="historyTopScorer" class="form-control" placeholder="ex: Karl Ewandé">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Statistiques du Buteur</label>
+            <input type="text" id="historyTopScorerStat" class="form-control" placeholder="ex: 9 buts ou 24 pts/m">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📸 Photo Officielle du Sacre / Trophée</label>
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="text" id="historyImageUrl" class="form-control" placeholder="URL de l'image (ex: https://... ou /uploads/...)">
+            <label class="btn btn-secondary" style="white-space: nowrap; cursor: pointer;">
+              📁 Parcourir
+              <input type="file" id="historyImageFileInput" accept="image/*" style="display: none;" onchange="handleHistoryImageUpload(this)">
+            </label>
+          </div>
+          <div id="historyImagePreview" style="display: none; margin-top: 0.5rem; text-align: center;">
+            <img src="" id="historyImagePreviewImg" style="max-height: 140px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover;">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📝 Récit & Faits Marquants de la Finale / Saison</label>
+          <textarea id="historySummary" class="form-control" rows="3" placeholder="Racontez les temps forts, l'ambiance, les exploits individuels et le parcours de cette édition..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('modalHistory')">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveHistory">💾 Enregistrer l'Édition</button>
         </div>
       </form>
     </div>

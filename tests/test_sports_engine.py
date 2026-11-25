@@ -163,6 +163,62 @@ class TestDatabaseLayer(unittest.TestCase):
         self.assertIsNone(self.db.get_highlight(h_id))
         self.assertEqual(len(self.db.list_highlight_comments(h_id)), 0)
 
+    def test_tournament_deletion(self):
+        t_id = self.db.create_tournament("Tournoi à Supprimer", "football", "2025-2026")
+        self.assertIsNotNone(self.db.get_tournament(t_id))
+        deleted = self.db.delete_tournament(t_id)
+        self.assertTrue(deleted)
+        self.assertIsNone(self.db.get_tournament(t_id))
+
+    def test_tournament_history_crud(self):
+        h_id = self.db.create_tournament_history({
+            "year": "2023-2024",
+            "sport": "football",
+            "tournament_title": "Coupe des Champions 2023",
+            "champion_team": "Génie Télécoms",
+            "runner_up_team": "Génie Mécanique",
+            "final_score": "2 - 1",
+            "top_scorer_name": "Samuel Mbappe",
+            "top_scorer_stat": "7 buts",
+            "mvp_name": "Paul Pogba",
+            "summary": "Victoire arrachée dans les arrêts de jeu.",
+            "image_url": "/uploads/test_trophy.jpg"
+        })
+        self.assertGreater(h_id, 0)
+
+        # Get history item
+        h = self.db.get_tournament_history(h_id)
+        self.assertIsNotNone(h)
+        self.assertEqual(h["champion_team"], "Génie Télécoms")
+        self.assertEqual(h["final_score"], "2 - 1")
+        self.assertEqual(h["top_scorer_name"], "Samuel Mbappe")
+
+        # List history by sport
+        football_list = self.db.list_tournament_history("football")
+        self.assertTrue(any(item["id"] == h_id for item in football_list))
+
+        # Update history item
+        self.db.update_tournament_history(h_id, {
+            "year": "2023-2024",
+            "sport": "football",
+            "tournament_title": "Coupe des Champions 2023 (Modifié)",
+            "champion_team": "Génie Télécoms",
+            "runner_up_team": "Génie Mécanique",
+            "final_score": "3 - 1",
+            "top_scorer_name": "Samuel Mbappe",
+            "top_scorer_stat": "8 buts",
+            "mvp_name": "Paul Pogba",
+            "summary": "Victoire éclatante.",
+            "image_url": "/uploads/test_trophy_v2.jpg"
+        })
+        updated = self.db.get_tournament_history(h_id)
+        self.assertEqual(updated["final_score"], "3 - 1")
+        self.assertEqual(updated["top_scorer_stat"], "8 buts")
+
+        # Delete history item
+        self.assertTrue(self.db.delete_tournament_history(h_id))
+        self.assertIsNone(self.db.get_tournament_history(h_id))
+
 
 if __name__ == "__main__":
     unittest.main()
